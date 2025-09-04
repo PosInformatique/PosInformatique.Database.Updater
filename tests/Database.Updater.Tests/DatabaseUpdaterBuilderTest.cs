@@ -13,7 +13,7 @@ namespace PosInformatique.Database.Updater.Tests
         {
             var action = () => new DatabaseUpdaterBuilder(null);
 
-            action.Should().Throw<ArgumentNullException>()
+            action.Should().ThrowExactly<ArgumentNullException>()
                 .WithParameterName("applicationName")
                 .WithMessage("Value cannot be null. (Parameter 'applicationName')");
         }
@@ -25,9 +25,19 @@ namespace PosInformatique.Database.Updater.Tests
         {
             var action = () => new DatabaseUpdaterBuilder(applicationName);
 
-            action.Should().Throw<ArgumentException>()
+            action.Should().ThrowExactly<ArgumentException>()
                 .WithParameterName("applicationName")
                 .WithMessage("The value cannot be an empty string or composed entirely of whitespace. (Parameter 'applicationName')");
+        }
+
+        [Fact]
+        public void Build_NoDatabaseProvider()
+        {
+            var builder = new DatabaseUpdaterBuilder("MyApplication");
+
+            builder.Invoking(b => b.Build())
+                .Should().ThrowExactly<InvalidOperationException>()
+                .WithMessage("No database provider has been configured.");
         }
     }
 }

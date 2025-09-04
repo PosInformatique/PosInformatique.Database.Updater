@@ -40,6 +40,8 @@ namespace PosInformatique.Database.Updater
 
         private readonly IList<string> migrationsAssemblies = new List<string>();
 
+        private IDatabaseProvider? databaseProvider;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DatabaseUpdaterBuilder"/> class.
         /// </summary>
@@ -82,8 +84,14 @@ namespace PosInformatique.Database.Updater
         /// Builds an instance of the <see cref="IDatabaseUpdater"/> to perform the migration of the database.
         /// </summary>
         /// <returns>An instance of the <see cref="IDatabaseUpdater"/> to perform the migration of the database.</returns>
+        /// <exception cref="InvalidOperationException">No database provider has been configured.</exception>
         public IDatabaseUpdater Build()
         {
+            if (this.databaseProvider is null)
+            {
+                throw new InvalidOperationException("No database provider has been configured.");
+            }
+
             var rootCommand = new RootCommand($"Upgrade the {this.applicationName} database.")
             {
                 new SqlServerConnectionStringArgument("connection-string")
@@ -113,7 +121,7 @@ namespace PosInformatique.Database.Updater
                 migrationsAssemblies.Add(this.callingAssembly.GetName().Name!);
             }
 
-            var databaseUpdater = new EntityFrameworkDatabaseUpdater(migrationsAssemblies);
+            var databaseUpdater = new EntityFrameworkDatabaseUpdater(this.databaseProvider, migrationsAssemblies);
 
             rootCommand.Action = CommandHandler.Create<string, int, string, IHost, CancellationToken>(databaseUpdater.UpgradeAsync);
 
@@ -128,6 +136,13 @@ namespace PosInformatique.Database.Updater
                     });
 
             return new CommandLineDatabaseUpdater(commandLine);
+        }
+
+        internal DatabaseUpdaterBuilder UseDatabaseProvider(IDatabaseProvider databaseProvider)
+        {
+            this.databaseProvider = databaseProvider;
+
+            return this;
         }
 
         private sealed class CommandLineDatabaseUpdater : IDatabaseUpdater

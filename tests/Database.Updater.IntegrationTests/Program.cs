@@ -13,6 +13,7 @@ namespace PosInformatique.Database.Updater.IntegrationTests
             var databaseUpdaterBuilder = new DatabaseUpdaterBuilder("MyApplication");
 
             var updater = databaseUpdaterBuilder
+                .UseSqlServer()
                 .UseMigrationsAssembly(typeof(MigrationsAssembly.PersonDbContext).Assembly)
                 .Build();
 

@@ -21,6 +21,7 @@ namespace PosInformatique.Database.Updater.Tests
             var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithExplicitMigrationsAssembly");
 
             var databaseUpdaterBuilder = new DatabaseUpdaterBuilder("MyApplication")
+                .UseSqlServer()
                 .UseMigrationsAssembly(typeof(MigrationsAssembly.Version1).Assembly);
             var databaseUpdater = databaseUpdaterBuilder
                 .Build();
@@ -50,6 +51,7 @@ namespace PosInformatique.Database.Updater.Tests
             var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithErrorMigrationsAssembly");
 
             var databaseUpdaterBuilder = new DatabaseUpdaterBuilder("MyApplication")
+                .UseSqlServer()
                 .UseMigrationsAssembly(typeof(MigrationsErrorAssembly.Version1).Assembly);
             var databaseUpdater = databaseUpdaterBuilder
                 .Build();
@@ -64,6 +66,7 @@ namespace PosInformatique.Database.Updater.Tests
         {
             var databaseUpdaterBuilder = new DatabaseUpdaterBuilder("MyApplication");
             var databaseUpdater = databaseUpdaterBuilder
+                .UseSqlServer()
                 .Build();
 
             var result = await databaseUpdater.UpgradeAsync([]);
@@ -78,6 +81,7 @@ namespace PosInformatique.Database.Updater.Tests
         {
             var databaseUpdaterBuilder = new DatabaseUpdaterBuilder("MyApplication");
             var databaseUpdater = databaseUpdaterBuilder
+                .UseSqlServer()
                 .Build();
 
             var result = await databaseUpdater.UpgradeAsync(args);

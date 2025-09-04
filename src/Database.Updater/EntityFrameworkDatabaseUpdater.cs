@@ -6,7 +6,6 @@
 
 namespace PosInformatique.Database.Updater
 {
-    using Microsoft.Data.SqlClient;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
@@ -14,37 +13,27 @@ namespace PosInformatique.Database.Updater
 
     internal sealed class EntityFrameworkDatabaseUpdater
     {
+        private readonly IDatabaseProvider databaseProvider;
+
         private readonly IReadOnlyList<string> migrationsAssemblies;
 
-        public EntityFrameworkDatabaseUpdater(IReadOnlyList<string> migrationsAssemblies)
+        public EntityFrameworkDatabaseUpdater(IDatabaseProvider databaseProvider, IReadOnlyList<string> migrationsAssemblies)
         {
+            this.databaseProvider = databaseProvider;
             this.migrationsAssemblies = migrationsAssemblies;
         }
 
-        public async Task<int> UpgradeAsync(string connectionString, int commandTimeout, string accessToken, IHost host, CancellationToken cancellationToken)
+        public async Task<int> UpgradeAsync(string connectionString, int commandTimeout, string? accessToken, IHost host, CancellationToken cancellationToken)
         {
             var loggerFactory = host.Services.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<EntityFrameworkDatabaseUpdater>();
 
-            var connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
-            connectionStringBuilder.CommandTimeout = commandTimeout;
-
-            using (var connection = new SqlConnection(connectionStringBuilder.ToString()))
+            using (var connection = this.databaseProvider.CreateConnection(connectionString, commandTimeout, accessToken))
             {
-                connection.AccessToken = accessToken;
-
-                var builder = new DbContextOptionsBuilder<DbContext>();
-                builder.UseSqlServer(
+                var builder = this.databaseProvider.CreateDbContextOptionsBuilder(
                     connection,
-                    opt =>
-                    {
-                        foreach (var assembly in this.migrationsAssemblies)
-                        {
-                            opt.MigrationsAssembly(assembly);
-                        }
-
-                        opt.CommandTimeout(commandTimeout);
-                    });
+                    this.migrationsAssemblies,
+                    commandTimeout);
 
                 builder.UseLoggerFactory(loggerFactory);
 
