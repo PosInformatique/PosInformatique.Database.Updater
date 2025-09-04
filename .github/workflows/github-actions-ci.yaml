@@ -23,12 +23,6 @@ jobs:
 
       - name: Build
         run: msbuild "PosInformatique.Database.Updater.sln" /p:Configuration=Debug
-        
-      - name: Restore NuGet packages
-        run: nuget restore "samples/PosInformatique.Database.Updater.Samples.sln"
-
-      - name: Build the samples
-        run: msbuild "samples/PosInformatique.Database.Updater.Samples.sln" /p:Configuration=Debug
 
       - name: Creates the LocalDB for the tests
         shell: cmd
