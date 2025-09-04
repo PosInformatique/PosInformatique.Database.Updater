@@ -9,30 +9,28 @@ namespace PosInformatique.Database.Updater.SqlServer
     using System.CommandLine;
     using System.CommandLine.Parsing;
     using System.Diagnostics.CodeAnalysis;
-    using Microsoft.Data.SqlClient;
 
     [ExcludeFromCodeCoverage]
     internal class SqlServerConnectionStringArgument : Argument<string>
     {
-        public SqlServerConnectionStringArgument(string name)
+        private readonly IDatabaseProvider databaseProvider;
+
+        public SqlServerConnectionStringArgument(IDatabaseProvider databaseProvider, string name)
             : base(name)
         {
+            this.databaseProvider = databaseProvider;
+
             this.Validators.Add(this.Validate);
         }
 
         private void Validate(ArgumentResult result)
         {
-            try
+            var connectionString = result.GetValue(this);
+            var validationResult = this.databaseProvider.ValidateConnectionString(connectionString!, this.Name);
+
+            if (validationResult is not null)
             {
-#pragma warning disable S1848 // Objects should not be created to be dropped immediately without being used
-#pragma warning disable CA1806 // Do not ignore method results
-                new SqlConnectionStringBuilder(result.GetValue(this));
-#pragma warning restore CA1806 // Do not ignore method results
-#pragma warning restore S1848 // Objects should not be created to be dropped immediately without being used
-            }
-            catch (ArgumentException)
-            {
-                result.AddError($"The SQL Server connection string specified in the '{this.Name}' argument is invalid.");
+                result.AddError(validationResult);
             }
         }
     }

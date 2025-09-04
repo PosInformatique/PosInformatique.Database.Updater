@@ -38,7 +38,7 @@ namespace PosInformatique.Database.Updater
 
         private readonly Assembly callingAssembly;
 
-        private readonly IList<string> migrationsAssemblies = new List<string>();
+        private readonly IList<string> migrationsAssemblies;
 
         private IDatabaseProvider? databaseProvider;
 
@@ -94,7 +94,7 @@ namespace PosInformatique.Database.Updater
 
             var rootCommand = new RootCommand($"Upgrade the {this.applicationName} database.")
             {
-                new SqlServerConnectionStringArgument("connection-string")
+                new SqlServerConnectionStringArgument(this.databaseProvider, "connection-string")
                 {
                     Description = "The connection string to the database to upgrade",
                 },

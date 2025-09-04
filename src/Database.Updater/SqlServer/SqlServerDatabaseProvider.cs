@@ -41,5 +41,23 @@ namespace PosInformatique.Database.Updater.SqlServer
                     opt.CommandTimeout(commandTimeout);
                 });
         }
+
+        public string? ValidateConnectionString(string connectionString, string argumentName)
+        {
+            try
+            {
+#pragma warning disable S1848 // Objects should not be created to be dropped immediately without being used
+#pragma warning disable CA1806 // Do not ignore method results
+                new SqlConnectionStringBuilder(connectionString);
+#pragma warning restore CA1806 // Do not ignore method results
+#pragma warning restore S1848 // Objects should not be created to be dropped immediately without being used
+            }
+            catch (ArgumentException)
+            {
+                return $"The SQL Server connection string specified in the '{argumentName}' argument is invalid.";
+            }
+
+            return null;
+        }
     }
 }

@@ -33,5 +33,13 @@ namespace PosInformatique.Database.Updater
         /// <returns>An instance of the <see cref="DbContextOptionsBuilder"/> to create a <see cref="DbContext"/>
         /// which will be used for the Entity Framework migrations.</returns>
         DbContextOptionsBuilder CreateDbContextOptionsBuilder(DbConnection connection, IReadOnlyList<string> migrationsAssemblies, int commandTimeout);
+
+        /// <summary>
+        /// Validates the specified connection string.
+        /// </summary>
+        /// <param name="connectionString">Connection string to validate.</param>
+        /// <param name="argumentName">Command line argument which contains the connection string to validate.</param>
+        /// <returns>An error message if the <paramref name="connectionString"/> is invalid. <see langword="null"/> in otherwise.</returns>
+        string? ValidateConnectionString(string connectionString, string argumentName);
     }
 }
