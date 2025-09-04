@@ -2,7 +2,7 @@
   "profiles": {
     "OK": {
       "commandName": "Project",
-      "commandLineArgs": "\"Data Source=(localDB)\\dbupdater-tests; Initial Catalog=IntegrationTests; Integrated Security=True\""
+      "commandLineArgs": "\"Data Source=(localDB)\\posinfo-tests; Initial Catalog=IntegrationTests; Integrated Security=True\""
     },
     "InvalidConnectionString": {
       "commandName": "Project",

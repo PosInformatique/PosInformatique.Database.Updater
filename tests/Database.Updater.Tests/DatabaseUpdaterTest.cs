@@ -11,7 +11,7 @@ namespace PosInformatique.Database.Updater.Tests
     [Collection(nameof(DatabaseUpdaterTest))]
     public class DatabaseUpdaterTest
     {
-        private const string ConnectionString = "Data Source=(localDB)\\dbupdater-tests; Integrated Security=True";
+        private const string ConnectionString = "Data Source=(localDB)\\posinfo-tests; Integrated Security=True";
 
         [Fact]
         public async Task UpgradeAsync_WithExplicitMigrationsAssembly()

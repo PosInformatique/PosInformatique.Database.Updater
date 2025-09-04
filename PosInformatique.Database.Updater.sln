@@ -37,6 +37,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{E9100678
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database.Updater.Tests.MigrationsErrorAssembly", "tests\Database.Updater.Tests.MigrationsErrorAssembly\Database.Updater.Tests.MigrationsErrorAssembly.csproj", "{6C0F0292-EB9E-EB63-C1D8-1C8B63E59FC8}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{25236396-6913-4183-B770-631C6FDACA15}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{20A16198-31B4-4155-AE36-AB1942F382A6}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\github-actions-ci.yaml = .github\workflows\github-actions-ci.yaml
+		.github\workflows\github-actions-release.yml = .github\workflows\github-actions-release.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,6 +82,8 @@ Global
 		{DF126F11-BF03-4B7E-B2F2-3A23E7FE6BF0} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{BF73C1D5-EF4C-4F34-9944-0D74667BE6A8} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{6C0F0292-EB9E-EB63-C1D8-1C8B63E59FC8} = {E9100678-42A3-461A-B8F0-DF12DA892979}
+		{25236396-6913-4183-B770-631C6FDACA15} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{20A16198-31B4-4155-AE36-AB1942F382A6} = {25236396-6913-4183-B770-631C6FDACA15}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {30DF5A1B-3B00-40E8-90F0-FA6F5846B215}
