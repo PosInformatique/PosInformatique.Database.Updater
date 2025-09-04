@@ -72,6 +72,41 @@ namespace PosInformatique.Database.Updater.Tests
         }
 
         [Fact]
+        public async Task UpgradeAsync_WithThrowException()
+        {
+            var server = new SqlServer(ConnectionString);
+
+            var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithErrorMigrationsAssembly");
+
+            var loggingProvider = new InMemoryLoggingProvider();
+
+            var databaseUpdaterBuilder = new DatabaseUpdaterBuilder("MyApplication")
+                .Configure(opt =>
+                {
+                    opt.ThrowExceptionOnError = false;
+                })
+                .Configure(opt =>
+                {
+                    opt.ThrowExceptionOnError = true;
+                })
+                .ConfigureLogging(l =>
+                {
+                    l.AddProvider(loggingProvider)
+                        .SetMinimumLevel(LogLevel.Error);
+                })
+                .UseSqlServer()
+                .UseMigrationsAssembly(typeof(MigrationsErrorAssembly.Version1).Assembly);
+            var databaseUpdater = databaseUpdaterBuilder
+                .Build();
+
+            await databaseUpdater.Invoking(du => du.UpgradeAsync([database.ConnectionString]))
+                .Should().ThrowExactlyAsync<DivideByZeroException>()
+                .WithMessage("Some errors occured during the migration...");
+
+            loggingProvider.Output.Should().Be("[PosInformatique.Database.Updater.EntityFrameworkDatabaseUpdater] (Error) : Some errors occured during the migration...\r\n");
+        }
+
+        [Fact]
         public async Task UpgradeAsync_NoArguments()
         {
             var databaseUpdaterBuilder = new DatabaseUpdaterBuilder("MyApplication");

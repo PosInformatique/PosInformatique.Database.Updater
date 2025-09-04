@@ -43,6 +43,8 @@ namespace PosInformatique.Database.Updater
 
         private readonly IList<Action<ILoggingBuilder>> loggerBuilders;
 
+        private readonly IList<Action<DatabaseUpdaterOptions>> configureOptions;
+
         private IDatabaseProvider? databaseProvider;
 
         /// <summary>
@@ -60,6 +62,19 @@ namespace PosInformatique.Database.Updater
             this.applicationName = applicationName;
             this.migrationsAssemblies = new List<string>();
             this.loggerBuilders = new List<Action<ILoggingBuilder>>();
+            this.configureOptions = new List<Action<DatabaseUpdaterOptions>>();
+        }
+
+        /// <summary>
+        /// Configures the options of the database upgrade process.
+        /// </summary>
+        /// <param name="options">Callback which allows to configure the options of the database upgrade process.</param>
+        /// <returns>The current <see cref="DatabaseUpdaterBuilder"/> instance to continue the configuration.</returns>
+        public DatabaseUpdaterBuilder Configure(Action<DatabaseUpdaterOptions> options)
+        {
+            this.configureOptions.Add(options);
+
+            return this;
         }
 
         /// <summary>
@@ -109,55 +124,7 @@ namespace PosInformatique.Database.Updater
                 throw new InvalidOperationException("No database provider has been configured.");
             }
 
-            var rootCommand = new RootCommand($"Upgrade the {this.applicationName} database.")
-            {
-                new SqlServerConnectionStringArgument(this.databaseProvider, "connection-string")
-                {
-                    Description = "The connection string to the database to upgrade",
-                },
-            };
-
-            rootCommand.Options.Add(new Option<string>("--access-token")
-            {
-                Description = "Access token to connect to the SQL database.",
-                Required = false,
-            });
-
-            rootCommand.Options.Add(new Option<int>("--command-timeout")
-            {
-                DefaultValueFactory = _ => DefaultCommandTimeout,
-                Description = "Maximum time in seconds to execute each SQL statements.",
-                Required = false,
-            });
-
-            // Gets the migration assembly and add the current assembly if not specified.
-            var migrationsAssemblies = this.migrationsAssemblies.ToList();
-
-            if (migrationsAssemblies.Count == 0)
-            {
-                migrationsAssemblies.Add(this.callingAssembly.GetName().Name!);
-            }
-
-            var databaseUpdater = new EntityFrameworkDatabaseUpdater(this.databaseProvider, migrationsAssemblies);
-
-            rootCommand.Action = CommandHandler.Create<string, int, string, IHost, CancellationToken>(databaseUpdater.UpgradeAsync);
-
-            var commandLine = new CommandLineConfiguration(rootCommand)
-                .UseHost(
-                    _ => Host.CreateDefaultBuilder(),
-                    hostBuilder =>
-                    {
-                        foreach (var loggerBuilder in this.loggerBuilders)
-                        {
-                            hostBuilder.ConfigureLogging(loggerBuilder);
-                        }
-
-                        hostBuilder.ConfigureServices(services =>
-                        {
-                        });
-                    });
-
-            return new CommandLineDatabaseUpdater(commandLine);
+            return new CommandLineDatabaseUpdater(this);
         }
 
         internal DatabaseUpdaterBuilder UseDatabaseProvider(IDatabaseProvider databaseProvider)
@@ -169,18 +136,87 @@ namespace PosInformatique.Database.Updater
 
         private sealed class CommandLineDatabaseUpdater : IDatabaseUpdater
         {
+            private readonly DatabaseUpdaterBuilder builder;
+
             private readonly CommandLineConfiguration commandLine;
 
-            public CommandLineDatabaseUpdater(CommandLineConfiguration commandLine)
+            private readonly EntityFrameworkDatabaseUpdater databaseUpdater;
+
+            public CommandLineDatabaseUpdater(DatabaseUpdaterBuilder builder)
             {
-                this.commandLine = commandLine;
+                this.builder = builder;
+
+                var rootCommand = new RootCommand($"Upgrade the {this.builder.applicationName} database.")
+                {
+                    new SqlServerConnectionStringArgument(this.builder.databaseProvider!, "connection-string")
+                    {
+                        Description = "The connection string to the database to upgrade",
+                    },
+                };
+
+                rootCommand.Options.Add(new Option<string>("--access-token")
+                {
+                    Description = "Access token to connect to the SQL database.",
+                    Required = false,
+                });
+
+                rootCommand.Options.Add(new Option<int>("--command-timeout")
+                {
+                    DefaultValueFactory = _ => DefaultCommandTimeout,
+                    Description = "Maximum time in seconds to execute each SQL statements.",
+                    Required = false,
+                });
+
+                // Gets the migration assembly and add the current assembly if not specified.
+                var migrationsAssemblies = this.builder.migrationsAssemblies.ToList();
+
+                if (migrationsAssemblies.Count == 0)
+                {
+                    migrationsAssemblies.Add(this.builder.callingAssembly.GetName().Name!);
+                }
+
+                this.databaseUpdater = new EntityFrameworkDatabaseUpdater(this.builder.databaseProvider!, migrationsAssemblies);
+
+                rootCommand.Action = CommandHandler.Create<string, int, string, IHost, CancellationToken>(this.databaseUpdater.UpgradeAsync);
+
+                this.commandLine = new CommandLineConfiguration(rootCommand)
+                    .UseHost(
+                        _ => Host.CreateDefaultBuilder(),
+                        hostBuilder =>
+                        {
+                            foreach (var loggerBuilder in this.builder.loggerBuilders)
+                            {
+                                hostBuilder.ConfigureLogging(loggerBuilder);
+                            }
+
+                            hostBuilder.ConfigureServices(services =>
+                            {
+                            });
+                        });
             }
 
             public async Task<int> UpgradeAsync(IReadOnlyList<string> args, CancellationToken cancellationToken = default)
             {
                 var parseResult = this.commandLine.Parse(args);
 
-                return await parseResult.InvokeAsync(cancellationToken);
+                var exitCode = await parseResult.InvokeAsync(cancellationToken);
+
+                if (this.databaseUpdater.CapturedException is not null)
+                {
+                    var options = new DatabaseUpdaterOptions();
+
+                    foreach (var configureOptions in this.builder.configureOptions)
+                    {
+                        configureOptions(options);
+                    }
+
+                    if (options.ThrowExceptionOnError)
+                    {
+                        this.databaseUpdater.CapturedException.Throw();
+                    }
+                }
+
+                return exitCode;
             }
         }
     }
