@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+
+    <Description>A simple console tool to apply Entity Framework Core migrations. Focused on SQL Server with support for AccessToken authentication. Outputs logs to the console, ideal for CI/CD scenarios.</Description>
+    <PackageTags>database sqlserver efcore migration ci cd console</PackageTags>
+    
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Icon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="System.CommandLine.Hosting" />
+  </ItemGroup>
+
+</Project>
