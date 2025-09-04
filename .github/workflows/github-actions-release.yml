@@ -30,7 +30,7 @@ jobs:
           --property:Configuration=Release
           --property:VersionPrefix=${{ github.event.inputs.VersionPrefix }}
           --property:VersionSuffix=${{ github.event.inputs.VersionSuffix }}
-          "src/PosInformatique.Database.Updater/PosInformatique.Database.Updater.csproj"
+          "src/Database.Updater/Database.Updater.csproj"
 
       - name: Publish the package to nuget.org
         run: dotnet nuget push "src/**/bin/Release/*.nupkg" --api-key "${{ secrets.NUGET_APIKEY }}" --source https://api.nuget.org/v3/index.json
