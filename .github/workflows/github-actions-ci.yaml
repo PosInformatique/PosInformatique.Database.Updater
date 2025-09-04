@@ -38,6 +38,6 @@ jobs:
         with:
           searchFolder: .\
           testAssembly: |
-            /tests/**/*tests.dll
+            /tests/**/*.tests.dll
             !./**/*TestAdapter.dll
             !./**/obj/**
