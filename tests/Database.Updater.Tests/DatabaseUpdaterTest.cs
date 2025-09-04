@@ -6,6 +6,7 @@
 
 namespace PosInformatique.Database.Updater.Tests
 {
+    using Microsoft.Extensions.Logging;
     using PosInformatique.Testing.Databases.SqlServer;
 
     [Collection(nameof(DatabaseUpdaterTest))]
@@ -50,7 +51,14 @@ namespace PosInformatique.Database.Updater.Tests
 
             var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithErrorMigrationsAssembly");
 
+            var loggingProvider = new InMemoryLoggingProvider();
+
             var databaseUpdaterBuilder = new DatabaseUpdaterBuilder("MyApplication")
+                .ConfigureLogging(l =>
+                {
+                    l.AddProvider(loggingProvider)
+                        .SetMinimumLevel(LogLevel.Error);
+                })
                 .UseSqlServer()
                 .UseMigrationsAssembly(typeof(MigrationsErrorAssembly.Version1).Assembly);
             var databaseUpdater = databaseUpdaterBuilder
@@ -59,6 +67,8 @@ namespace PosInformatique.Database.Updater.Tests
             var result = await databaseUpdater.UpgradeAsync([database.ConnectionString]);
 
             result.Should().Be(99);
+
+            loggingProvider.Output.Should().Be("[PosInformatique.Database.Updater.EntityFrameworkDatabaseUpdater] (Error) : Some errors occured during the migration...\r\n");
         }
 
         [Fact]

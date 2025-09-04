@@ -15,6 +15,7 @@ namespace PosInformatique.Database.Updater
     using Microsoft.Data.SqlClient;
     using Microsoft.EntityFrameworkCore.Migrations;
     using Microsoft.Extensions.Hosting;
+    using Microsoft.Extensions.Logging;
     using PosInformatique.Database.Updater.SqlServer;
 
     /// <summary>
@@ -40,6 +41,8 @@ namespace PosInformatique.Database.Updater
 
         private readonly IList<string> migrationsAssemblies;
 
+        private readonly IList<Action<ILoggingBuilder>> loggerBuilders;
+
         private IDatabaseProvider? databaseProvider;
 
         /// <summary>
@@ -56,6 +59,20 @@ namespace PosInformatique.Database.Updater
 
             this.applicationName = applicationName;
             this.migrationsAssemblies = new List<string>();
+            this.loggerBuilders = new List<Action<ILoggingBuilder>>();
+        }
+
+        /// <summary>
+        /// Configures the logging for the upgrade database operation.
+        /// Use the <see cref="InMemoryLoggingProvider"/> to capture the logs in memory.
+        /// </summary>
+        /// <param name="builder"><see cref="ILoggingBuilder"/> which allows to configure the logging.</param>
+        /// <returns>The current <see cref="DatabaseUpdaterBuilder"/> instance to continue the configuration.</returns>
+        public DatabaseUpdaterBuilder ConfigureLogging(Action<ILoggingBuilder> builder)
+        {
+            this.loggerBuilders.Add(builder);
+
+            return this;
         }
 
         /// <summary>
@@ -130,6 +147,11 @@ namespace PosInformatique.Database.Updater
                     _ => Host.CreateDefaultBuilder(),
                     hostBuilder =>
                     {
+                        foreach (var loggerBuilder in this.loggerBuilders)
+                        {
+                            hostBuilder.ConfigureLogging(loggerBuilder);
+                        }
+
                         hostBuilder.ConfigureServices(services =>
                         {
                         });
