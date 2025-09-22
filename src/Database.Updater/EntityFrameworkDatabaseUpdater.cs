@@ -6,7 +6,6 @@
 
 namespace PosInformatique.Database.Updater
 {
-    using System.Runtime.ExceptionServices;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
@@ -24,8 +23,6 @@ namespace PosInformatique.Database.Updater
             this.migrationsAssemblies = migrationsAssemblies;
         }
 
-        public ExceptionDispatchInfo? CapturedException { get; private set; }
-
         public async Task<int> UpgradeAsync(string connectionString, int commandTimeout, string? accessToken, IHost host, CancellationToken cancellationToken)
         {
             var loggerFactory = host.Services.GetRequiredService<ILoggerFactory>();
@@ -42,18 +39,7 @@ namespace PosInformatique.Database.Updater
 
                 using (var context = new DbContext(builder.Options))
                 {
-                    try
-                    {
-                        await context.Database.MigrateAsync(cancellationToken);
-                    }
-                    catch (Exception exception)
-                    {
-                        this.CapturedException = ExceptionDispatchInfo.Capture(exception);
-
-                        logger.LogError(exception, exception.Message);
-
-                        return 99;
-                    }
+                    await context.Database.MigrateAsync(cancellationToken);
                 }
             }
 

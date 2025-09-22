@@ -74,6 +74,9 @@ namespace PosInformatique.Database.Updater.Tests
         [Fact]
         public async Task UpgradeAsync_WithThrowException()
         {
+            using var output = new StringWriter();
+            Console.SetOut(output);
+
             var server = new SqlServer(ConnectionString);
 
             var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithErrorMigrationsAssembly");
@@ -104,11 +107,15 @@ namespace PosInformatique.Database.Updater.Tests
                 .WithMessage("Some errors occured during the migration...");
 
             loggingProvider.Output.Should().Be("[PosInformatique.Database.Updater.EntityFrameworkDatabaseUpdater] (Error) : Some errors occured during the migration...\r\n");
+            output.ToString().Should().BeEmpty();
         }
 
         [Fact]
         public async Task UpgradeAsync_NoArguments()
         {
+            using var output = new StringWriter();
+            Console.SetOut(output);
+
             var databaseUpdaterBuilder = new DatabaseUpdaterBuilder("MyApplication");
             var databaseUpdater = databaseUpdaterBuilder
                 .UseSqlServer()
@@ -117,6 +124,26 @@ namespace PosInformatique.Database.Updater.Tests
             var result = await databaseUpdater.UpgradeAsync([]);
 
             result.Should().Be(1);
+
+            output.ToString().Should().Be(
+                """
+                Description:
+                  Upgrade the MyApplication database.
+
+                Usage:
+                  testhost <connection-string> [options]
+
+                Arguments:
+                  <connection-string>  The connection string to the database to upgrade
+
+                Options:
+                  --access-token <access-token>        Access token to connect to the SQL database.
+                  --command-timeout <command-timeout>  Maximum time in seconds to execute each SQL statements. [default: 30]
+                  -?, -h, --help                       Show help and usage information
+                  --version                            Show version information
+
+                
+                """);
         }
 
         [Theory]
@@ -124,6 +151,9 @@ namespace PosInformatique.Database.Updater.Tests
         [InlineData(ConnectionString, "--command-timeout=abcd")]
         public async Task UpgradeAsync_WrongArguments(params string[] args)
         {
+            using var output = new StringWriter();
+            Console.SetOut(output);
+
             var databaseUpdaterBuilder = new DatabaseUpdaterBuilder("MyApplication");
             var databaseUpdater = databaseUpdaterBuilder
                 .UseSqlServer()
@@ -132,6 +162,26 @@ namespace PosInformatique.Database.Updater.Tests
             var result = await databaseUpdater.UpgradeAsync(args);
 
             result.Should().Be(1);
+
+            output.ToString().Should().Be(
+                """
+                Description:
+                  Upgrade the MyApplication database.
+
+                Usage:
+                  testhost <connection-string> [options]
+
+                Arguments:
+                  <connection-string>  The connection string to the database to upgrade
+
+                Options:
+                  --access-token <access-token>        Access token to connect to the SQL database.
+                  --command-timeout <command-timeout>  Maximum time in seconds to execute each SQL statements. [default: 30]
+                  -?, -h, --help                       Show help and usage information
+                  --version                            Show version information
+
+                
+                """);
         }
     }
 }

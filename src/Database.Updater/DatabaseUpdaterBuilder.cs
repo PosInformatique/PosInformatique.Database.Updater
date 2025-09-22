@@ -12,8 +12,10 @@ namespace PosInformatique.Database.Updater
     using System.Threading.Tasks;
     using Microsoft.Data.SqlClient;
     using Microsoft.EntityFrameworkCore.Migrations;
+    using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Options;
     using PosInformatique.Database.Updater.SqlServer;
 
     /// <summary>
@@ -39,8 +41,6 @@ namespace PosInformatique.Database.Updater
 
         private readonly IList<string> migrationsAssemblies;
 
-        private readonly IList<Action<DatabaseUpdaterOptions>> configureOptions;
-
         private readonly IHostBuilder hostBuilder;
 
         private IDatabaseProvider? databaseProvider;
@@ -59,7 +59,6 @@ namespace PosInformatique.Database.Updater
 
             this.applicationName = applicationName;
             this.migrationsAssemblies = new List<string>();
-            this.configureOptions = new List<Action<DatabaseUpdaterOptions>>();
 
             this.hostBuilder = Host.CreateDefaultBuilder();
         }
@@ -71,7 +70,10 @@ namespace PosInformatique.Database.Updater
         /// <returns>The current <see cref="DatabaseUpdaterBuilder"/> instance to continue the configuration.</returns>
         public DatabaseUpdaterBuilder Configure(Action<DatabaseUpdaterOptions> options)
         {
-            this.configureOptions.Add(options);
+            this.hostBuilder.ConfigureServices(s =>
+            {
+                s.Configure(options);
+            });
 
             return this;
         }
@@ -200,24 +202,9 @@ namespace PosInformatique.Database.Updater
             {
                 var parseResult = this.commandLine.Parse(args);
 
-                var exitCode = await parseResult.InvokeAsync(cancellationToken: cancellationToken);
+                var invocationConfiguration = new InvocationConfiguration() { EnableDefaultExceptionHandler = false };
 
-                if (this.databaseUpdater.CapturedException is not null)
-                {
-                    var options = new DatabaseUpdaterOptions();
-
-                    foreach (var configureOptions in this.builder.configureOptions)
-                    {
-                        configureOptions(options);
-                    }
-
-                    if (options.ThrowExceptionOnError)
-                    {
-                        this.databaseUpdater.CapturedException.Throw();
-                    }
-                }
-
-                return exitCode;
+                return await parseResult.InvokeAsync(invocationConfiguration, cancellationToken: cancellationToken);
             }
 
             private async Task<int> ExecuteMigrationAsync(ParseResult parseResult, CancellationToken cancellationToken = default)
@@ -226,16 +213,30 @@ namespace PosInformatique.Database.Updater
 
                 await this.host.StartAsync();
 
-                var exitCode = await this.databaseUpdater.UpgradeAsync(
-                    parseResult.GetRequiredValue(this.connectionStringArgument),
-                    1123, //TOD
-                    null,//DO
-                    this.host,
-                    cancellationToken);
+                try
+                {
+                    return await this.databaseUpdater.UpgradeAsync(
+                        parseResult.GetRequiredValue(this.connectionStringArgument),
+                        1123, //TODO
+                        null, //TODO
+                        this.host,
+                        cancellationToken);
+                }
+                catch (Exception)
+                {
+                    var options = this.host.Services.GetRequiredService<IOptions<DatabaseUpdaterOptions>>();
 
-                await this.host.StopAsync();
+                    if (options.Value.ThrowExceptionOnError)
+                    {
+                        throw;
+                    }
 
-                return exitCode;
+                    return 99;
+                }
+                finally
+                {
+                    await this.host.StopAsync();
+                }
             }
         }
     }
