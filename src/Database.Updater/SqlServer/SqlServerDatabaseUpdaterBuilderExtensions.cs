@@ -20,7 +20,7 @@ namespace PosInformatique.Database.Updater
         /// <returns>The <paramref name="builder"/> instance to continue the configuration.</returns>
         public static DatabaseUpdaterBuilder UseSqlServer(this DatabaseUpdaterBuilder builder)
         {
-            return builder.UseDatabaseProvider(new SqlServerDatabaseProvider());
+            return builder.UseDatabaseProvider<SqlServerDatabaseProvider>();
         }
     }
 }

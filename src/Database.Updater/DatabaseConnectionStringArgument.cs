@@ -1,21 +1,21 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="SqlServerConnectionStringArgument.cs" company="P.O.S Informatique">
+// <copyright file="DatabaseConnectionStringArgument.cs" company="P.O.S Informatique">
 //     Copyright (c) P.O.S Informatique. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace PosInformatique.Database.Updater.SqlServer
+namespace PosInformatique.Database.Updater
 {
     using System.CommandLine;
     using System.CommandLine.Parsing;
     using System.Diagnostics.CodeAnalysis;
 
     [ExcludeFromCodeCoverage]
-    internal class SqlServerConnectionStringArgument : Argument<string>
+    internal class DatabaseConnectionStringArgument : Argument<string>
     {
         private readonly IDatabaseProvider databaseProvider;
 
-        public SqlServerConnectionStringArgument(IDatabaseProvider databaseProvider, string name)
+        public DatabaseConnectionStringArgument(IDatabaseProvider databaseProvider, string name)
             : base(name)
         {
             this.databaseProvider = databaseProvider;

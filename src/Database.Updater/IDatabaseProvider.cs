@@ -17,22 +17,19 @@ namespace PosInformatique.Database.Updater
         /// <summary>
         /// Creates a <see cref="DbConnection"/> to the database.
         /// </summary>
-        /// <param name="connectionString">Connection string to the database.</param>
-        /// <param name="commandTimeout">Timeout for the command execution.</param>
-        /// <param name="accessToken">Access token for authentication if need.</param>
+        /// <param name="migrationContext">Migration database context.</param>
         /// <returns>The <see cref="DbConnection"/> which allows to connect to the database.</returns>
-        DbConnection CreateConnection(string connectionString, int commandTimeout, string? accessToken);
+        DbConnection CreateConnection(IDatabaseMigrationContext migrationContext);
 
         /// <summary>
         /// Creates an instance of the <see cref="DbContextOptionsBuilder"/> to create a <see cref="DbContext"/>
         /// which will be used for the Entity Framework migrations.
         /// </summary>
         /// <param name="connection"><see cref="DbConnection"/> to the database.</param>
-        /// <param name="migrationsAssemblies">List of the assemblies that contains the migrations to execute.</param>
-        /// <param name="commandTimeout">Timeout for the command execution.</param>
+        /// <param name="migrationContext">Migration database context.</param>
         /// <returns>An instance of the <see cref="DbContextOptionsBuilder"/> to create a <see cref="DbContext"/>
         /// which will be used for the Entity Framework migrations.</returns>
-        DbContextOptionsBuilder CreateDbContextOptionsBuilder(DbConnection connection, IReadOnlyList<string> migrationsAssemblies, int commandTimeout);
+        DbContextOptionsBuilder CreateDbContextOptionsBuilder(DbConnection connection, IDatabaseMigrationContext migrationContext);
 
         /// <summary>
         /// Validates the specified connection string.

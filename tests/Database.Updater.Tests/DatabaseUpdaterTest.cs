@@ -47,6 +47,9 @@ namespace PosInformatique.Database.Updater.Tests
         [Fact]
         public async Task UpgradeAsync_WithErrorMigrationsAssembly()
         {
+            using var output = new StringWriter();
+            Console.SetOut(output);
+
             var server = new SqlServer(ConnectionString);
 
             var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithErrorMigrationsAssembly");
@@ -68,7 +71,9 @@ namespace PosInformatique.Database.Updater.Tests
 
             result.Should().Be(99);
 
-            loggingProvider.Output.Should().Be("[PosInformatique.Database.Updater.EntityFrameworkDatabaseUpdater] (Error) : Some errors occured during the migration...\r\n");
+            loggingProvider.Output.Should().Be("[PosInformatique.Database.Updater.IDatabaseUpdater] (Error) : Some errors occured during the migration...\r\n");
+
+            output.ToString().Should().StartWith("fail: PosInformatique.Database.Updater.IDatabaseUpdater[0]");
         }
 
         [Fact]
@@ -106,8 +111,9 @@ namespace PosInformatique.Database.Updater.Tests
                 .Should().ThrowExactlyAsync<DivideByZeroException>()
                 .WithMessage("Some errors occured during the migration...");
 
-            loggingProvider.Output.Should().Be("[PosInformatique.Database.Updater.EntityFrameworkDatabaseUpdater] (Error) : Some errors occured during the migration...\r\n");
-            output.ToString().Should().BeEmpty();
+            loggingProvider.Output.Should().Be("[PosInformatique.Database.Updater.IDatabaseUpdater] (Error) : Some errors occured during the migration...\r\n");
+
+            output.ToString().Should().StartWith("fail: PosInformatique.Database.Updater.IDatabaseUpdater[0]");
         }
 
         [Fact]

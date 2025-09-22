@@ -39,11 +39,9 @@ namespace PosInformatique.Database.Updater
 
         private readonly Assembly callingAssembly;
 
-        private readonly IList<string> migrationsAssemblies;
+        private readonly List<string> migrationsAssemblies;
 
         private readonly IHostBuilder hostBuilder;
-
-        private IDatabaseProvider? databaseProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DatabaseUpdaterBuilder"/> class.
@@ -61,6 +59,10 @@ namespace PosInformatique.Database.Updater
             this.migrationsAssemblies = new List<string>();
 
             this.hostBuilder = Host.CreateDefaultBuilder();
+            this.hostBuilder.ConfigureServices(services =>
+            {
+                services.AddSingleton<IDatabaseMigrationEngine, EntityFrameworkDatabaseMigrationEngine>();
+            });
         }
 
         /// <summary>
@@ -70,9 +72,9 @@ namespace PosInformatique.Database.Updater
         /// <returns>The current <see cref="DatabaseUpdaterBuilder"/> instance to continue the configuration.</returns>
         public DatabaseUpdaterBuilder Configure(Action<DatabaseUpdaterOptions> options)
         {
-            this.hostBuilder.ConfigureServices(s =>
+            this.hostBuilder.ConfigureServices(services =>
             {
-                s.Configure(options);
+                services.Configure(options);
             });
 
             return this;
@@ -120,17 +122,16 @@ namespace PosInformatique.Database.Updater
         /// <exception cref="InvalidOperationException">No database provider has been configured.</exception>
         public IDatabaseUpdater Build()
         {
-            if (this.databaseProvider is null)
-            {
-                throw new InvalidOperationException("No database provider has been configured.");
-            }
-
             return new CommandLineDatabaseUpdater(this);
         }
 
-        internal DatabaseUpdaterBuilder UseDatabaseProvider(IDatabaseProvider databaseProvider)
+        internal DatabaseUpdaterBuilder UseDatabaseProvider<TDatabaseProvider>()
+            where TDatabaseProvider : class, IDatabaseProvider
         {
-            this.databaseProvider = databaseProvider;
+            this.hostBuilder.ConfigureServices(services =>
+            {
+                services.AddSingleton<IDatabaseProvider, TDatabaseProvider>();
+            });
 
             return this;
         }
@@ -141,52 +142,56 @@ namespace PosInformatique.Database.Updater
 
             private readonly RootCommand commandLine;
 
-            private readonly EntityFrameworkDatabaseUpdater databaseUpdater;
+            private readonly DatabaseConnectionStringArgument connectionStringArgument;
 
-            private readonly SqlServerConnectionStringArgument connectionStringArgument;
+            private readonly Option<string> accessTokenOption;
+
+            private readonly Option<int> commandTimeoutOption;
 
             private IHost? host;
 
             public CommandLineDatabaseUpdater(DatabaseUpdaterBuilder builder)
             {
                 this.builder = builder;
+                this.host = builder.hostBuilder.Build();
 
-                this.connectionStringArgument = new SqlServerConnectionStringArgument(this.builder.databaseProvider!, "connection-string")
+                var databaseProvider = this.host.Services.GetService<IDatabaseProvider>();
+
+                if (databaseProvider == null)
+                {
+                    throw new InvalidOperationException("No database provider has been configured.");
+                }
+
+                this.commandLine = new RootCommand($"Upgrade the {this.builder.applicationName} database.");
+
+                // Connection string argument
+                this.connectionStringArgument = new DatabaseConnectionStringArgument(databaseProvider, "connection-string")
                 {
                     Description = "The connection string to the database to upgrade",
                 };
 
-                this.commandLine = new RootCommand($"Upgrade the {this.builder.applicationName} database.")
-                {
-                    this.connectionStringArgument,
-                };
+                this.commandLine.Add(this.connectionStringArgument);
 
-                this.commandLine.Options.Add(new Option<string>("--access-token")
+                // Access token option "--access-token"
+                this.accessTokenOption = new Option<string>("--access-token")
                 {
                     Description = "Access token to connect to the SQL database.",
                     Required = false,
-                });
+                };
 
-                this.commandLine.Options.Add(new Option<int>("--command-timeout")
+                this.commandLine.Options.Add(this.accessTokenOption);
+
+                // Command timeout option "--command-timeout"
+                this.commandTimeoutOption = new Option<int>("--command-timeout")
                 {
                     DefaultValueFactory = _ => DefaultCommandTimeout,
                     Description = "Maximum time in seconds to execute each SQL statements.",
                     Required = false,
-                });
+                };
+
+                this.commandLine.Options.Add(this.commandTimeoutOption);
 
                 this.commandLine.SetAction(this.ExecuteMigrationAsync);
-
-                // Gets the migration assembly and add the current assembly if not specified.
-                var migrationsAssemblies = this.builder.migrationsAssemblies.ToList();
-
-                if (migrationsAssemblies.Count == 0)
-                {
-                    migrationsAssemblies.Add(this.builder.callingAssembly.GetName().Name!);
-                }
-
-                this.databaseUpdater = new EntityFrameworkDatabaseUpdater(this.builder.databaseProvider!, migrationsAssemblies);
-
-                this.host = builder.hostBuilder.Build();
             }
 
             public void Dispose()
@@ -211,19 +216,36 @@ namespace PosInformatique.Database.Updater
             {
                 ObjectDisposedException.ThrowIf(this.host is null, this);
 
-                await this.host.StartAsync();
+                var logger = this.host.Services.GetRequiredService<ILogger<IDatabaseUpdater>>();
 
                 try
                 {
-                    return await this.databaseUpdater.UpgradeAsync(
+                    await this.host.StartAsync(cancellationToken);
+
+                    // Gets the migration assembly and add the current assembly if not specified.
+                    var migrationsAssemblies = this.builder.migrationsAssemblies.ToList();
+
+                    if (migrationsAssemblies.Count == 0)
+                    {
+                        migrationsAssemblies.Add(this.builder.callingAssembly.GetName().Name!);
+                    }
+
+                    var context = new DatabaseMigrationContext(
                         parseResult.GetRequiredValue(this.connectionStringArgument),
-                        1123, //TODO
-                        null, //TODO
-                        this.host,
-                        cancellationToken);
+                        migrationsAssemblies)
+                    {
+                        AccessToken = parseResult.GetValue(this.accessTokenOption),
+                        CommandTimeout = parseResult.GetValue(this.commandTimeoutOption),
+                    };
+
+                    var migrationEngine = this.host.Services.GetRequiredService<IDatabaseMigrationEngine>();
+
+                    return await migrationEngine.UpgradeAsync(context, cancellationToken);
                 }
-                catch (Exception)
+                catch (Exception exception)
                 {
+                    logger.LogError(exception, exception.Message);
+
                     var options = this.host.Services.GetRequiredService<IOptions<DatabaseUpdaterOptions>>();
 
                     if (options.Value.ThrowExceptionOnError)
@@ -235,7 +257,7 @@ namespace PosInformatique.Database.Updater
                 }
                 finally
                 {
-                    await this.host.StopAsync();
+                    await this.host.StopAsync(cancellationToken);
                 }
             }
         }

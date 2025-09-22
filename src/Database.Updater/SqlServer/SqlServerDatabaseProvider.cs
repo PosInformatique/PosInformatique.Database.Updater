@@ -16,29 +16,29 @@ namespace PosInformatique.Database.Updater.SqlServer
         {
         }
 
-        public DbConnection CreateConnection(string connectionString, int commandTimeout, string? accessToken)
+        public DbConnection CreateConnection(IDatabaseMigrationContext migrationContext)
         {
-            var connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
-            connectionStringBuilder.CommandTimeout = commandTimeout;
+            var connectionStringBuilder = new SqlConnectionStringBuilder(migrationContext.ConnectionString);
+            connectionStringBuilder.CommandTimeout = migrationContext.CommandTimeout;
 
             return new SqlConnection(connectionStringBuilder.ToString())
             {
-                AccessToken = accessToken,
+                AccessToken = migrationContext.AccessToken,
             };
         }
 
-        public DbContextOptionsBuilder CreateDbContextOptionsBuilder(DbConnection connection, IReadOnlyList<string> migrationsAssemblies, int commandTimeout)
+        public DbContextOptionsBuilder CreateDbContextOptionsBuilder(DbConnection connection, IDatabaseMigrationContext migrationContext)
         {
             return new DbContextOptionsBuilder().UseSqlServer(
                 connection,
                 opt =>
                 {
-                    foreach (var assembly in migrationsAssemblies)
+                    foreach (var assembly in migrationContext.Assemblies)
                     {
                         opt.MigrationsAssembly(assembly);
                     }
 
-                    opt.CommandTimeout(commandTimeout);
+                    opt.CommandTimeout(migrationContext.CommandTimeout);
                 });
         }
 
