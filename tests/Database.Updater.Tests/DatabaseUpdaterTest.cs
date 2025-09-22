@@ -19,7 +19,7 @@ namespace PosInformatique.Database.Updater.Tests
         {
             var server = new SqlServer(ConnectionString);
 
-            var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithExplicitMigrationsAssembly");
+            var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithExplicitMigrationsAssembly", TestContext.Current.CancellationToken);
 
             var databaseUpdaterBuilder = new DatabaseUpdaterBuilder("MyApplication")
                 .UseSqlServer()
@@ -28,11 +28,11 @@ namespace PosInformatique.Database.Updater.Tests
             using var databaseUpdater = databaseUpdaterBuilder
                 .Build();
 
-            var result = await databaseUpdater.UpgradeAsync([database.ConnectionString]);
+            var result = await databaseUpdater.UpgradeAsync([database.ConnectionString], TestContext.Current.CancellationToken);
 
             result.Should().Be(0);
 
-            var tables = await database.GetTablesAsync();
+            var tables = await database.GetTablesAsync(TestContext.Current.CancellationToken);
 
             tables.Should().HaveCount(2);
 
@@ -53,7 +53,7 @@ namespace PosInformatique.Database.Updater.Tests
 
             var server = new SqlServer(ConnectionString);
 
-            var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithErrorMigrationsAssembly");
+            var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithErrorMigrationsAssembly", TestContext.Current.CancellationToken);
 
             var loggingProvider = new InMemoryLoggingProvider();
 
@@ -69,7 +69,7 @@ namespace PosInformatique.Database.Updater.Tests
             using var databaseUpdater = databaseUpdaterBuilder
                 .Build();
 
-            var result = await databaseUpdater.UpgradeAsync([database.ConnectionString]);
+            var result = await databaseUpdater.UpgradeAsync([database.ConnectionString], TestContext.Current.CancellationToken);
 
             result.Should().Be(99);
 
@@ -86,7 +86,7 @@ namespace PosInformatique.Database.Updater.Tests
 
             var server = new SqlServer(ConnectionString);
 
-            var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithErrorMigrationsAssembly");
+            var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithErrorMigrationsAssembly", TestContext.Current.CancellationToken);
 
             var loggingProvider = new InMemoryLoggingProvider();
 
@@ -131,7 +131,7 @@ namespace PosInformatique.Database.Updater.Tests
                 .UseSqlServer()
                 .Build();
 
-            var result = await databaseUpdater.UpgradeAsync([]);
+            var result = await databaseUpdater.UpgradeAsync([], TestContext.Current.CancellationToken);
 
             result.Should().Be(1);
 
@@ -141,7 +141,7 @@ namespace PosInformatique.Database.Updater.Tests
                   Upgrade the MyApplication database.
 
                 Usage:
-                  testhost <connection-string> [options]
+                  PosInformatique.Database.Updater.Tests <connection-string> [options]
 
                 Arguments:
                   <connection-string>  The connection string to the database to upgrade
@@ -170,7 +170,7 @@ namespace PosInformatique.Database.Updater.Tests
                 .UseSqlServer()
                 .Build();
 
-            var result = await databaseUpdater.UpgradeAsync(args);
+            var result = await databaseUpdater.UpgradeAsync(args, TestContext.Current.CancellationToken);
 
             result.Should().Be(1);
 
@@ -180,7 +180,7 @@ namespace PosInformatique.Database.Updater.Tests
                   Upgrade the MyApplication database.
 
                 Usage:
-                  testhost <connection-string> [options]
+                  PosInformatique.Database.Updater.Tests <connection-string> [options]
 
                 Arguments:
                   <connection-string>  The connection string to the database to upgrade
