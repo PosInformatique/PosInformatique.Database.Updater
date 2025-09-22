@@ -24,7 +24,8 @@ namespace PosInformatique.Database.Updater.Tests
             var databaseUpdaterBuilder = new DatabaseUpdaterBuilder("MyApplication")
                 .UseSqlServer()
                 .UseMigrationsAssembly(typeof(MigrationsAssembly.Version1).Assembly);
-            var databaseUpdater = databaseUpdaterBuilder
+
+            using var databaseUpdater = databaseUpdaterBuilder
                 .Build();
 
             var result = await databaseUpdater.UpgradeAsync([database.ConnectionString]);
@@ -64,7 +65,8 @@ namespace PosInformatique.Database.Updater.Tests
                 })
                 .UseSqlServer()
                 .UseMigrationsAssembly(typeof(MigrationsErrorAssembly.Version1).Assembly);
-            var databaseUpdater = databaseUpdaterBuilder
+
+            using var databaseUpdater = databaseUpdaterBuilder
                 .Build();
 
             var result = await databaseUpdater.UpgradeAsync([database.ConnectionString]);
@@ -104,7 +106,8 @@ namespace PosInformatique.Database.Updater.Tests
                 })
                 .UseSqlServer()
                 .UseMigrationsAssembly(typeof(MigrationsErrorAssembly.Version1).Assembly);
-            var databaseUpdater = databaseUpdaterBuilder
+
+            using var databaseUpdater = databaseUpdaterBuilder
                 .Build();
 
             await databaseUpdater.Invoking(du => du.UpgradeAsync([database.ConnectionString]))
@@ -123,7 +126,8 @@ namespace PosInformatique.Database.Updater.Tests
             Console.SetOut(output);
 
             var databaseUpdaterBuilder = new DatabaseUpdaterBuilder("MyApplication");
-            var databaseUpdater = databaseUpdaterBuilder
+
+            using var databaseUpdater = databaseUpdaterBuilder
                 .UseSqlServer()
                 .Build();
 
@@ -161,7 +165,8 @@ namespace PosInformatique.Database.Updater.Tests
             Console.SetOut(output);
 
             var databaseUpdaterBuilder = new DatabaseUpdaterBuilder("MyApplication");
-            var databaseUpdater = databaseUpdaterBuilder
+
+            using var databaseUpdater = databaseUpdaterBuilder
                 .UseSqlServer()
                 .Build();
 
