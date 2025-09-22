@@ -7,8 +7,6 @@
 namespace PosInformatique.Database.Updater
 {
     using System.CommandLine;
-    using System.CommandLine.Hosting;
-    using System.CommandLine.NamingConventionBinder;
     using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
@@ -41,9 +39,9 @@ namespace PosInformatique.Database.Updater
 
         private readonly IList<string> migrationsAssemblies;
 
-        private readonly IList<Action<ILoggingBuilder>> loggerBuilders;
-
         private readonly IList<Action<DatabaseUpdaterOptions>> configureOptions;
+
+        private readonly IHostBuilder hostBuilder;
 
         private IDatabaseProvider? databaseProvider;
 
@@ -61,8 +59,9 @@ namespace PosInformatique.Database.Updater
 
             this.applicationName = applicationName;
             this.migrationsAssemblies = new List<string>();
-            this.loggerBuilders = new List<Action<ILoggingBuilder>>();
             this.configureOptions = new List<Action<DatabaseUpdaterOptions>>();
+
+            this.hostBuilder = Host.CreateDefaultBuilder();
         }
 
         /// <summary>
@@ -85,7 +84,7 @@ namespace PosInformatique.Database.Updater
         /// <returns>The current <see cref="DatabaseUpdaterBuilder"/> instance to continue the configuration.</returns>
         public DatabaseUpdaterBuilder ConfigureLogging(Action<ILoggingBuilder> builder)
         {
-            this.loggerBuilders.Add(builder);
+            this.hostBuilder.ConfigureLogging(builder);
 
             return this;
         }
@@ -138,34 +137,42 @@ namespace PosInformatique.Database.Updater
         {
             private readonly DatabaseUpdaterBuilder builder;
 
-            private readonly CommandLineConfiguration commandLine;
+            private readonly RootCommand commandLine;
 
             private readonly EntityFrameworkDatabaseUpdater databaseUpdater;
+
+            private readonly SqlServerConnectionStringArgument connectionStringArgument;
+
+            private IHost? host;
 
             public CommandLineDatabaseUpdater(DatabaseUpdaterBuilder builder)
             {
                 this.builder = builder;
 
-                var rootCommand = new RootCommand($"Upgrade the {this.builder.applicationName} database.")
+                this.connectionStringArgument = new SqlServerConnectionStringArgument(this.builder.databaseProvider!, "connection-string")
                 {
-                    new SqlServerConnectionStringArgument(this.builder.databaseProvider!, "connection-string")
-                    {
-                        Description = "The connection string to the database to upgrade",
-                    },
+                    Description = "The connection string to the database to upgrade",
                 };
 
-                rootCommand.Options.Add(new Option<string>("--access-token")
+                this.commandLine = new RootCommand($"Upgrade the {this.builder.applicationName} database.")
+                {
+                    this.connectionStringArgument,
+                };
+
+                this.commandLine.Options.Add(new Option<string>("--access-token")
                 {
                     Description = "Access token to connect to the SQL database.",
                     Required = false,
                 });
 
-                rootCommand.Options.Add(new Option<int>("--command-timeout")
+                this.commandLine.Options.Add(new Option<int>("--command-timeout")
                 {
                     DefaultValueFactory = _ => DefaultCommandTimeout,
                     Description = "Maximum time in seconds to execute each SQL statements.",
                     Required = false,
                 });
+
+                this.commandLine.SetAction(this.ExecuteMigrationAsync);
 
                 // Gets the migration assembly and add the current assembly if not specified.
                 var migrationsAssemblies = this.builder.migrationsAssemblies.ToList();
@@ -177,29 +184,23 @@ namespace PosInformatique.Database.Updater
 
                 this.databaseUpdater = new EntityFrameworkDatabaseUpdater(this.builder.databaseProvider!, migrationsAssemblies);
 
-                rootCommand.Action = CommandHandler.Create<string, int, string, IHost, CancellationToken>(this.databaseUpdater.UpgradeAsync);
+                this.host = builder.hostBuilder.Build();
+            }
 
-                this.commandLine = new CommandLineConfiguration(rootCommand)
-                    .UseHost(
-                        _ => Host.CreateDefaultBuilder(),
-                        hostBuilder =>
-                        {
-                            foreach (var loggerBuilder in this.builder.loggerBuilders)
-                            {
-                                hostBuilder.ConfigureLogging(loggerBuilder);
-                            }
-
-                            hostBuilder.ConfigureServices(services =>
-                            {
-                            });
-                        });
+            public void Dispose()
+            {
+                if (this.host is not null)
+                {
+                    this.host.Dispose();
+                    this.host = null;
+                }
             }
 
             public async Task<int> UpgradeAsync(IReadOnlyList<string> args, CancellationToken cancellationToken = default)
             {
                 var parseResult = this.commandLine.Parse(args);
 
-                var exitCode = await parseResult.InvokeAsync(cancellationToken);
+                var exitCode = await parseResult.InvokeAsync(cancellationToken: cancellationToken);
 
                 if (this.databaseUpdater.CapturedException is not null)
                 {
@@ -215,6 +216,24 @@ namespace PosInformatique.Database.Updater
                         this.databaseUpdater.CapturedException.Throw();
                     }
                 }
+
+                return exitCode;
+            }
+
+            private async Task<int> ExecuteMigrationAsync(ParseResult parseResult, CancellationToken cancellationToken = default)
+            {
+                ObjectDisposedException.ThrowIf(this.host is null, this);
+
+                await this.host.StartAsync();
+
+                var exitCode = await this.databaseUpdater.UpgradeAsync(
+                    parseResult.GetRequiredValue(this.connectionStringArgument),
+                    1123, //TOD
+                    null,//DO
+                    this.host,
+                    cancellationToken);
+
+                await this.host.StopAsync();
 
                 return exitCode;
             }

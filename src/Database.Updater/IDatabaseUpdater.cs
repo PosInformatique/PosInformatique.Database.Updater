@@ -9,7 +9,7 @@ namespace PosInformatique.Database.Updater
     /// <summary>
     /// Allows to perform the migration of the database.
     /// </summary>
-    public interface IDatabaseUpdater
+    public interface IDatabaseUpdater : IDisposable
     {
         /// <summary>
         /// Performs the migration of the database.
