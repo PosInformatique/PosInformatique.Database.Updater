@@ -14,7 +14,7 @@ namespace PosInformatique.Database.Updater
     /// </summary>
     public class InMemoryLoggingProvider : ILoggerProvider
     {
-        private readonly TextWriter output;
+        private TextWriter? output;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InMemoryLoggingProvider"/> class.
@@ -27,18 +27,32 @@ namespace PosInformatique.Database.Updater
         /// <summary>
         /// Gets the logs output.
         /// </summary>
-        public string Output => this.output.ToString()!;
+        public string Output
+        {
+            get
+            {
+                ObjectDisposedException.ThrowIf(this.output == null, this);
+
+                return this.output.ToString()!;
+            }
+        }
 
         /// <inheritdoc />
         public ILogger CreateLogger(string categoryName)
         {
+            ObjectDisposedException.ThrowIf(this.output == null, this);
+
             return new StringDumpLogger(this, categoryName);
         }
 
         /// <inheritdoc />
         public void Dispose()
         {
-            this.output.Dispose();
+            if (this.output is not null)
+            {
+                this.output.Dispose();
+                this.output = null;
+            }
         }
 
         private sealed class StringDumpLogger : ILogger
@@ -55,12 +69,23 @@ namespace PosInformatique.Database.Updater
 
             public IDisposable? BeginScope<TState>(TState state)
                 where TState : notnull
-                    => null;
+            {
+                ObjectDisposedException.ThrowIf(this.provider.output == null, this.provider);
 
-            public bool IsEnabled(LogLevel logLevel) => true;
+                return null;
+            }
+
+            public bool IsEnabled(LogLevel logLevel)
+            {
+                ObjectDisposedException.ThrowIf(this.provider.output == null, this.provider);
+
+                return true;
+            }
 
             public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
             {
+                ObjectDisposedException.ThrowIf(this.provider.output == null, this.provider);
+
                 this.provider.output.WriteLine($"[{this.categoryName}] ({logLevel}) : {formatter(state, exception)}");
             }
         }
