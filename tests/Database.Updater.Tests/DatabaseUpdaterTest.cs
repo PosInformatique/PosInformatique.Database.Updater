@@ -76,7 +76,7 @@ namespace PosInformatique.Database.Updater.Tests
 
             result.Should().Be(99);
 
-            loggingProvider.Output.Should().Be("[PosInformatique.Database.Updater.IDatabaseUpdater] (Error) : Some errors occured during the migration...\r\n");
+            loggingProvider.Output.Should().Be($"[PosInformatique.Database.Updater.IDatabaseUpdater] (Error) : Some errors occured during the migration...{Environment.NewLine}");
 
             output.ToString().Should().StartWith("fail: PosInformatique.Database.Updater.IDatabaseUpdater[0]");
         }
@@ -117,7 +117,7 @@ namespace PosInformatique.Database.Updater.Tests
                 .Should().ThrowExactlyAsync<DivideByZeroException>()
                 .WithMessage("Some errors occured during the migration...");
 
-            loggingProvider.Output.Should().Be("[PosInformatique.Database.Updater.IDatabaseUpdater] (Error) : Some errors occured during the migration...\r\n");
+            loggingProvider.Output.Should().Be($"[PosInformatique.Database.Updater.IDatabaseUpdater] (Error) : Some errors occured during the migration...{Environment.NewLine}");
 
             output.ToString().Should().StartWith("fail: PosInformatique.Database.Updater.IDatabaseUpdater[0]");
         }

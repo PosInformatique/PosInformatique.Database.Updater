@@ -19,11 +19,11 @@ namespace PosInformatique.Database.Updater.Tests
 
             logger1.LogInformation("The information");
 
-            provider.Output.Should().Be("[The category 1] (Information) : The information\r\n");
+            provider.Output.Should().Be($"[The category 1] (Information) : The information{Environment.NewLine}");
 
             logger2.LogError("The error");
 
-            provider.Output.Should().Be("[The category 1] (Information) : The information\r\n[The category 2] (Error) : The error\r\n");
+            provider.Output.Should().Be($"[The category 1] (Information) : The information{Environment.NewLine}[The category 2] (Error) : The error{Environment.NewLine}");
         }
 
         [Fact]
