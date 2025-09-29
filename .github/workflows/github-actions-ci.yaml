@@ -8,39 +8,42 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          SA_PASSWORD: "P@ssw0rd12345!"
+          ACCEPT_EULA: "Y"
+        ports:
+          - 1433:1433
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup NuGet
-        uses: nuget/setup-nuget@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
 
-      - name: Restore NuGet packages
-        run: nuget restore PosInformatique.Database.Updater.sln
-      
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v2
+      - name: Restore dependencies
+        run: dotnet restore PosInformatique.Database.Updater.sln
 
-      - name: Build
-        run: msbuild "PosInformatique.Database.Updater.sln" /p:Configuration=Debug
-
-      - name: Creates the LocalDB for the tests
-        shell: cmd
-        run: SqlLocalDB create posinfo-tests
-
-      - name: Creates the SQL Login service accounts for the tests
-        shell: cmd
-        run: sqlcmd -S "(localDB)\posinfo-tests" -Q "IF NOT EXISTS (SELECT 1 FROM [sys].[server_principals] WHERE [Name] = 'ServiceAccountLogin') CREATE LOGIN [ServiceAccountLogin] WITH PASSWORD = 'P@ssw0rd'"
+      - name: Build solution
+        run: dotnet build PosInformatique.Database.Updater.sln --configuration Release --no-restore
 
       - name: Run tests
-        run: dotnet test --no-build --verbosity normal
-
-      # Use this fix https://github.com/microsoft/vstest-action/issues/31#issuecomment-2159463764
-      - name: Test with the dotnet CLI
-        uses: rusty-bender/vstest-action@main
+        run: |
+          dotnet test PosInformatique.Database.Updater.sln \
+          --configuration Release \
+          --no-build \
+          --logger "trx;LogFileName=test_results.trx" \
+          --results-directory ./TestResults
+        env:
+          DATABASE_UPDATER_UNIT_TESTS_CONNECTION_STRING: "Data Source=localhost,1433;Database=master;User Id=sa;Password=P@ssw0rd12345!;TrustServerCertificate=True;"
+  
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: (!cancelled())
         with:
-          searchFolder: .\
-          testAssembly: |
-            /tests/**/*.tests.dll
-            !./**/*TestAdapter.dll
-            !./**/obj/**
+          files: |
+            TestResults/**/*.trx
