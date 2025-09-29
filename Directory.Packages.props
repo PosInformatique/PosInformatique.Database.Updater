@@ -7,7 +7,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-    <PackageVersion Include="PosInformatique.Testing.Databases.SqlServer.Dac" Version="2.3.0" />
+    <PackageVersion Include="PosInformatique.Testing.Databases.SqlServer" Version="3.0.0-rc.4" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-rc.1.25451.107" />
     <PackageVersion Include="xunit.v3" Version="3.0.1" />
