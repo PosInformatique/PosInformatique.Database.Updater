@@ -12,14 +12,12 @@ namespace PosInformatique.Database.Updater.Tests
     [Collection(nameof(DatabaseUpdaterTest))]
     public class DatabaseUpdaterTest
     {
-        private const string ConnectionString = "Data Source=(localDB)\\posinfo-tests; Integrated Security=True";
-
         [Fact]
         public async Task UpgradeAsync_WithExplicitMigrationsAssembly()
         {
-            var server = new SqlServer(ConnectionString);
+            var server = new SqlServer(ConnectionStrings.Default);
 
-            var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithExplicitMigrationsAssembly", TestContext.Current.CancellationToken);
+            var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithExplicitMigrationsAssembly", cancellationToken: TestContext.Current.CancellationToken);
 
             var databaseUpdaterBuilder = new DatabaseUpdaterBuilder("MyApplication")
                 .UseSqlServer()
@@ -51,9 +49,9 @@ namespace PosInformatique.Database.Updater.Tests
             using var output = new StringWriter();
             Console.SetOut(output);
 
-            var server = new SqlServer(ConnectionString);
+            var server = new SqlServer(ConnectionStrings.Default);
 
-            var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithErrorMigrationsAssembly", TestContext.Current.CancellationToken);
+            var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithErrorMigrationsAssembly", cancellationToken: TestContext.Current.CancellationToken);
 
             var loggingProvider = new InMemoryLoggingProvider();
 
@@ -84,9 +82,9 @@ namespace PosInformatique.Database.Updater.Tests
             using var output = new StringWriter();
             Console.SetOut(output);
 
-            var server = new SqlServer(ConnectionString);
+            var server = new SqlServer(ConnectionStrings.Default);
 
-            var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithErrorMigrationsAssembly", TestContext.Current.CancellationToken);
+            var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithErrorMigrationsAssembly", cancellationToken: TestContext.Current.CancellationToken);
 
             var loggingProvider = new InMemoryLoggingProvider();
 
@@ -158,7 +156,7 @@ namespace PosInformatique.Database.Updater.Tests
 
         [Theory]
         [InlineData("NotConnectionString")]
-        [InlineData(ConnectionString, "--command-timeout=abcd")]
+        [InlineData("Data Source=some_server;", "--command-timeout=abcd")]
         public async Task UpgradeAsync_WrongArguments(params string[] args)
         {
             using var output = new StringWriter();
