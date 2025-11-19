@@ -1,0 +1,91 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36408.4
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database.Updater", "src\Database.Updater\Database.Updater.csproj", "{961D82E3-18B9-4CB4-B290-8146D874AB39}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
+		LICENSE = LICENSE
+		README.md = README.md
+		stylecop.json = stylecop.json
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database.Updater.Tests", "tests\Database.Updater.Tests\Database.Updater.Tests.csproj", "{8788FC9A-8CAE-4A45-8832-18E29AF38838}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database.Updater.IntegrationTests", "tests\Database.Updater.IntegrationTests\Database.Updater.IntegrationTests.csproj", "{64B1BA81-69E9-AE03-F57A-BE4A0B20A9E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database.Updater.Tests.MigrationsAssembly", "tests\Database.Updater.Tests.MigrationsAssembly\Database.Updater.Tests.MigrationsAssembly.csproj", "{FFFBF4C0-674C-EA8E-7714-76A92E6973E3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{DF126F11-BF03-4B7E-B2F2-3A23E7FE6BF0}"
+	ProjectSection(SolutionItems) = preProject
+		tests\.editorconfig = tests\.editorconfig
+		tests\Directory.Build.props = tests\Directory.Build.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{BF73C1D5-EF4C-4F34-9944-0D74667BE6A8}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{E9100678-42A3-461A-B8F0-DF12DA892979}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database.Updater.Tests.MigrationsErrorAssembly", "tests\Database.Updater.Tests.MigrationsErrorAssembly\Database.Updater.Tests.MigrationsErrorAssembly.csproj", "{6C0F0292-EB9E-EB63-C1D8-1C8B63E59FC8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{25236396-6913-4183-B770-631C6FDACA15}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{20A16198-31B4-4155-AE36-AB1942F382A6}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\github-actions-ci.yaml = .github\workflows\github-actions-ci.yaml
+		.github\workflows\github-actions-release.yml = .github\workflows\github-actions-release.yml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{961D82E3-18B9-4CB4-B290-8146D874AB39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{961D82E3-18B9-4CB4-B290-8146D874AB39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{961D82E3-18B9-4CB4-B290-8146D874AB39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{961D82E3-18B9-4CB4-B290-8146D874AB39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8788FC9A-8CAE-4A45-8832-18E29AF38838}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8788FC9A-8CAE-4A45-8832-18E29AF38838}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8788FC9A-8CAE-4A45-8832-18E29AF38838}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8788FC9A-8CAE-4A45-8832-18E29AF38838}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64B1BA81-69E9-AE03-F57A-BE4A0B20A9E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64B1BA81-69E9-AE03-F57A-BE4A0B20A9E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64B1BA81-69E9-AE03-F57A-BE4A0B20A9E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64B1BA81-69E9-AE03-F57A-BE4A0B20A9E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFFBF4C0-674C-EA8E-7714-76A92E6973E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFFBF4C0-674C-EA8E-7714-76A92E6973E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFFBF4C0-674C-EA8E-7714-76A92E6973E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFFBF4C0-674C-EA8E-7714-76A92E6973E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C0F0292-EB9E-EB63-C1D8-1C8B63E59FC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C0F0292-EB9E-EB63-C1D8-1C8B63E59FC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C0F0292-EB9E-EB63-C1D8-1C8B63E59FC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C0F0292-EB9E-EB63-C1D8-1C8B63E59FC8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8788FC9A-8CAE-4A45-8832-18E29AF38838} = {E9100678-42A3-461A-B8F0-DF12DA892979}
+		{64B1BA81-69E9-AE03-F57A-BE4A0B20A9E8} = {E9100678-42A3-461A-B8F0-DF12DA892979}
+		{FFFBF4C0-674C-EA8E-7714-76A92E6973E3} = {E9100678-42A3-461A-B8F0-DF12DA892979}
+		{DF126F11-BF03-4B7E-B2F2-3A23E7FE6BF0} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{BF73C1D5-EF4C-4F34-9944-0D74667BE6A8} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{6C0F0292-EB9E-EB63-C1D8-1C8B63E59FC8} = {E9100678-42A3-461A-B8F0-DF12DA892979}
+		{25236396-6913-4183-B770-631C6FDACA15} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{20A16198-31B4-4155-AE36-AB1942F382A6} = {25236396-6913-4183-B770-631C6FDACA15}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {30DF5A1B-3B00-40E8-90F0-FA6F5846B215}
+	EndGlobalSection
+EndGlobal

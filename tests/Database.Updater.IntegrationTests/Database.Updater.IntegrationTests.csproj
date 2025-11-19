@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Database.Updater\Database.Updater.csproj" />
+    <ProjectReference Include="..\Database.Updater.Tests.MigrationsAssembly\Database.Updater.Tests.MigrationsAssembly.csproj" />
+  </ItemGroup>
+
+</Project>

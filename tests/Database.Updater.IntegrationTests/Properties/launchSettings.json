@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "OK": {
+      "commandName": "Project",
+      "commandLineArgs": "\"Data Source=(localDB)\\posinfo-tests; Initial Catalog=IntegrationTests; Integrated Security=True\""
+    },
+    "InvalidConnectionString": {
+      "commandName": "Project",
+      "commandLineArgs": "\"Data Source=(localDB)\\notexists; Initial Catalog=IntegrationTests; Integrated Security=True\""
+    },
+    "NoArguments": {
+      "commandName": "Project",
+      "commandLineArgs": ""
+    }
+  }
+}

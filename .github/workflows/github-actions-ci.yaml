@@ -1,0 +1,49 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  push:
+    branches: [ "releases/**" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          SA_PASSWORD: "P@ssw0rd12345!"
+          ACCEPT_EULA: "Y"
+        ports:
+          - 1433:1433
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore PosInformatique.Database.Updater.sln
+
+      - name: Build solution
+        run: dotnet build PosInformatique.Database.Updater.sln --configuration Release --no-restore
+
+      - name: Run tests
+        run: |
+          dotnet test PosInformatique.Database.Updater.sln \
+          --configuration Release \
+          --no-build \
+          --logger "trx;LogFileName=test_results.trx" \
+          --results-directory ./TestResults
+        env:
+          DATABASE_UPDATER_UNIT_TESTS_CONNECTION_STRING: "Data Source=localhost,1433;Database=master;User Id=sa;Password=P@ssw0rd12345!;TrustServerCertificate=True;"
+  
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: (!cancelled())
+        with:
+          files: |
+            TestResults/**/*.trx
