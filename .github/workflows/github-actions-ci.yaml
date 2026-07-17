@@ -26,14 +26,14 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore dependencies
-        run: dotnet restore PosInformatique.Database.Updater.sln
+        run: dotnet restore PosInformatique.Database.Updater.slnx
 
       - name: Build solution
-        run: dotnet build PosInformatique.Database.Updater.sln --configuration Release --no-restore
+        run: dotnet build PosInformatique.Database.Updater.slnx --configuration Release --no-restore
 
       - name: Run tests
         run: |
-          dotnet test PosInformatique.Database.Updater.sln \
+          dotnet test PosInformatique.Database.Updater.slnx \
           --configuration Release \
           --no-build \
           --logger "trx;LogFileName=test_results.trx" \

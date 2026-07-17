@@ -1,0 +1,30 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+    <File Path="stylecop.json" />
+  </Folder>
+  <Folder Name="/Solution Items/.github/" />
+  <Folder Name="/Solution Items/.github/workflows/">
+    <File Path=".github/workflows/github-actions-ci.yaml" />
+    <File Path=".github/workflows/github-actions-release.yml" />
+  </Folder>
+  <Folder Name="/Solution Items/src/">
+    <File Path="src/Directory.Build.props" />
+  </Folder>
+  <Folder Name="/Solution Items/tests/">
+    <File Path="tests/.editorconfig" />
+    <File Path="tests/Directory.Build.props" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/Database.Updater.IntegrationTests/Database.Updater.IntegrationTests.csproj" />
+    <Project Path="tests/Database.Updater.Tests.MigrationsAssembly/Database.Updater.Tests.MigrationsAssembly.csproj" />
+    <Project Path="tests/Database.Updater.Tests.MigrationsErrorAssembly/Database.Updater.Tests.MigrationsErrorAssembly.csproj" />
+    <Project Path="tests/Database.Updater.Tests/Database.Updater.Tests.csproj" />
+  </Folder>
+  <Project Path="src/Database.Updater/Database.Updater.csproj" />
+</Solution>
