@@ -54,9 +54,9 @@ an application.
 The `DatabaseUpdaterBuilder` creates an internal `IHost`, allowing developers to configure additional services.
 
 After configuring the `DatabaseUpdaterBuilder`, call `Build()` to get an `IDatabaseUpdater`, then
-call `IDatabaseUpdater.UpgradeAsync(string[])` to run the migration process with the `args` from `Main()`.
+call `IDatabaseUpdater.UpgradeAsync(IReadOnlyList<string>, CancellationToken)` to run the migration process with the `args` from `Main()`.
 
-`IDatabaseUpdater.UpgradeAsync(string[])` returns an `int` error code that you can return from `Main()` and use in calling
+`IDatabaseUpdater.UpgradeAsync(IReadOnlyList<string>, CancellationToken)` returns an `int` error code that you can return from `Main()` and use in calling
 scripts (e.g., `%ERRORLEVEL%`).
 
 ### Name of the application
