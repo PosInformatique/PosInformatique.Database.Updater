@@ -12,11 +12,6 @@ namespace PosInformatique.Database.Updater.Tests
     [Collection(nameof(DatabaseUpdaterTest))]
     public class DatabaseUpdaterTest
     {
-        static DatabaseUpdaterTest()
-        {
-            License.Accepted = true;
-        }
-
         [Fact]
         public async Task UpgradeAsync_WithExplicitMigrationsAssembly()
         {
