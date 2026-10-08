@@ -31,18 +31,21 @@ namespace PosInformatique.Database.Updater
 
         private sealed class CustomExtensionInfo : DbContextOptionsExtensionInfo
         {
-            public CustomExtensionInfo(IDbContextOptionsExtension extension)
+            private readonly DatabaseUpdaterExtension extension;
+
+            public CustomExtensionInfo(DatabaseUpdaterExtension extension)
                 : base(extension)
             {
+                this.extension = extension;
             }
 
             public override bool IsDatabaseProvider => false;
 
             public override string LogFragment => string.Empty;
 
-            public override int GetServiceProviderHashCode() => 0;
+            public override int GetServiceProviderHashCode() => this.extension.serviceProvider.GetHashCode();
 
-            public override bool ShouldUseSameServiceProvider(DbContextOptionsExtensionInfo other) => true;
+            public override bool ShouldUseSameServiceProvider(DbContextOptionsExtensionInfo other) => false;
 
             public override void PopulateDebugInfo(IDictionary<string, string> debugInfo)
             {

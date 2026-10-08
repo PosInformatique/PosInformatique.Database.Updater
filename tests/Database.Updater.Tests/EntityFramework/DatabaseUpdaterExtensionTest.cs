@@ -11,12 +11,16 @@ namespace PosInformatique.Database.Updater.Tests
         [Fact]
         public void Info()
         {
-            var extension = new DatabaseUpdaterExtension(default);
+            var serviceProvider = new Mock<IServiceProvider>(MockBehavior.Strict);
+            serviceProvider.Setup(sp => sp.GetHashCode())
+                .Returns(1234);
+
+            var extension = new DatabaseUpdaterExtension(serviceProvider.Object);
 
             extension.Info.IsDatabaseProvider.Should().BeFalse();
             extension.Info.LogFragment.Should().BeEmpty();
-            extension.Info.GetServiceProviderHashCode().Should().Be(0);
-            extension.Info.ShouldUseSameServiceProvider(default).Should().BeTrue();
+            extension.Info.GetServiceProviderHashCode().Should().Be(1234);
+            extension.Info.ShouldUseSameServiceProvider(default).Should().BeFalse();
         }
     }
 }

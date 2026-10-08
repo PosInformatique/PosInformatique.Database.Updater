@@ -10,6 +10,7 @@
     <PackageReference Include="AwesomeAssertions" />
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
     <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" />
+    <PackageReference Include="Moq" />
     <PackageReference Include="PosInformatique.Testing.Databases.SqlServer" />
     <PackageReference Include="xunit.v3.core.mtp-v2" />  </ItemGroup>
 
@@ -21,6 +22,7 @@
 
   <ItemGroup>
     <Using Include="AwesomeAssertions" />
+    <Using Include="Moq" />
     <Using Include="Xunit" />
   </ItemGroup>
 
