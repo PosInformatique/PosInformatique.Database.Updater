@@ -94,6 +94,20 @@ namespace PosInformatique.Database.Updater
         }
 
         /// <summary>
+        /// Adds a delegate for configuring additional services for the updater application.
+        /// </summary>
+        /// <param name="configureServices">A delegate for configuring the <see cref="IServiceCollection"/>.</param>
+        /// <returns>The current instance of <see cref="DatabaseUpdaterBuilder"/> to continue configuration.</returns>
+        public DatabaseUpdaterBuilder ConfigureServices(Action<IServiceCollection> configureServices)
+        {
+            ArgumentNullException.ThrowIfNull(configureServices);
+
+            this.hostBuilder.ConfigureServices(configureServices);
+
+            return this;
+        }
+
+        /// <summary>
         /// Use a specific Entity Framework Core assembly which contains the <see cref="Migration"/> to execute.
         /// </summary>
         /// <param name="assembly">Name of the assembly which contains the <see cref="Migration"/> to execute.</param>

@@ -6,6 +6,7 @@
 
 namespace PosInformatique.Database.Updater.MigrationsAssembly
 {
+    using AwesomeAssertions;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Infrastructure;
     using Microsoft.EntityFrameworkCore.Migrations;
@@ -14,6 +15,12 @@ namespace PosInformatique.Database.Updater.MigrationsAssembly
     [Migration("Version1")]
     public class Version1 : Migration
     {
+        public Version1(ISingletonService singletonService, ITransientService transientService)
+        {
+            transientService.SingletonService.Should().BeSameAs(singletonService);
+            transientService.InstanceCount.Should().Be(1);
+        }
+
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {

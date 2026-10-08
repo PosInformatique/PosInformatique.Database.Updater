@@ -39,5 +39,16 @@ namespace PosInformatique.Database.Updater.Tests
                 .Should().ThrowExactly<InvalidOperationException>()
                 .WithMessage("No database provider has been configured.");
         }
+
+        [Fact]
+        public void ConfigureServices_WithNullArgument()
+        {
+            var builder = new DatabaseUpdaterBuilder("MyApplication");
+
+            builder.Invoking(b => b.ConfigureServices(null))
+                .Should().ThrowExactly<ArgumentNullException>()
+                .WithParameterName("configureServices")
+                .WithMessage("Value cannot be null. (Parameter 'configureServices')");
+        }
     }
 }

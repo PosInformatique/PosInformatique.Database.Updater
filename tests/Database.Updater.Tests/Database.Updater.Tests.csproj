@@ -8,8 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="AwesomeAssertions" />
-    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage"/>
-    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport"/>
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
+    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" />
     <PackageReference Include="PosInformatique.Testing.Databases.SqlServer" />
     <PackageReference Include="xunit.v3.core.mtp-v2" />  </ItemGroup>
 

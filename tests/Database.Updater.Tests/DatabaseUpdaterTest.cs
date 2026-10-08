@@ -6,6 +6,7 @@
 
 namespace PosInformatique.Database.Updater.Tests
 {
+    using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using PosInformatique.Testing.Databases.SqlServer;
 
@@ -20,6 +21,15 @@ namespace PosInformatique.Database.Updater.Tests
             var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithExplicitMigrationsAssembly", cancellationToken: TestContext.Current.CancellationToken);
 
             var databaseUpdaterBuilder = new DatabaseUpdaterBuilder("MyApplication")
+                .Configure(c =>
+                {
+                    c.ThrowExceptionOnError = true;
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddSingleton<ISingletonService, SingletonService>();
+                    s.AddTransient<ITransientService, TransientService>();
+                })
                 .UseSqlServer()
                 .UseMigrationsAssembly(typeof(MigrationsAssembly.Version1).Assembly);
 
