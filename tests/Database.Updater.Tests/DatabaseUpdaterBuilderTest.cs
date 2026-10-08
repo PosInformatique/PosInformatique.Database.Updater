@@ -6,6 +6,8 @@
 
 namespace PosInformatique.Database.Updater.Tests
 {
+    using System.Reflection;
+
     public class DatabaseUpdaterBuilderTest
     {
         [Fact]
@@ -60,6 +62,63 @@ namespace PosInformatique.Database.Updater.Tests
                 .Should().ThrowExactly<ArgumentNullException>()
                 .WithParameterName("configureServices")
                 .WithMessage("Value cannot be null. (Parameter 'configureServices')");
+        }
+
+        [Fact]
+        public void Configure_WithNullArgument()
+        {
+            var builder = new DatabaseUpdaterBuilder("MyApplication");
+
+            builder.Invoking(b => b.Configure(null))
+                .Should().ThrowExactly<ArgumentNullException>()
+                .WithParameterName("options")
+                .WithMessage("Value cannot be null. (Parameter 'options')");
+        }
+
+        [Fact]
+        public void ConfigureLogging_WithNullArgument()
+        {
+            var builder = new DatabaseUpdaterBuilder("MyApplication");
+
+            builder.Invoking(b => b.ConfigureLogging(null))
+                .Should().ThrowExactly<ArgumentNullException>()
+                .WithParameterName("builder")
+                .WithMessage("Value cannot be null. (Parameter 'builder')");
+        }
+
+        [Fact]
+        public void UseMigrationsAssembly_Assembly_WithNullArgument()
+        {
+            var builder = new DatabaseUpdaterBuilder("MyApplication");
+
+            builder.Invoking(b => b.UseMigrationsAssembly((Assembly)null))
+                .Should().ThrowExactly<ArgumentNullException>()
+                .WithParameterName("assembly")
+                .WithMessage("Value cannot be null. (Parameter 'assembly')");
+        }
+
+        [Fact]
+        public void UseMigrationsAssembly_String_WithNullArgument()
+        {
+            var builder = new DatabaseUpdaterBuilder("MyApplication");
+
+            builder.Invoking(b => b.UseMigrationsAssembly((string)null))
+                .Should().ThrowExactly<ArgumentNullException>()
+                .WithParameterName("assembly")
+                .WithMessage("Value cannot be null. (Parameter 'assembly')");
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("    ")]
+        public void UseMigrationsAssembly_String_EmptyOrWhitespace(string assembly)
+        {
+            var builder = new DatabaseUpdaterBuilder("MyApplication");
+
+            builder.Invoking(b => b.UseMigrationsAssembly(assembly))
+                .Should().ThrowExactly<ArgumentException>()
+                .WithParameterName("assembly")
+                .WithMessage("The value cannot be an empty string or composed entirely of whitespace. (Parameter 'assembly')");
         }
     }
 }

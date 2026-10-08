@@ -72,8 +72,11 @@ namespace PosInformatique.Database.Updater
         /// </summary>
         /// <param name="options">Callback which allows to configure the options of the database upgrade process.</param>
         /// <returns>The current <see cref="DatabaseUpdaterBuilder"/> instance to continue the configuration.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is <see langword="null"/>.</exception>
         public DatabaseUpdaterBuilder Configure(Action<DatabaseUpdaterOptions> options)
         {
+            ArgumentNullException.ThrowIfNull(options);
+
             this.hostBuilder.ConfigureServices(services =>
             {
                 services.Configure(options);
@@ -103,8 +106,11 @@ namespace PosInformatique.Database.Updater
         /// </summary>
         /// <param name="builder"><see cref="ILoggingBuilder"/> which allows to configure the logging.</param>
         /// <returns>The current <see cref="DatabaseUpdaterBuilder"/> instance to continue the configuration.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is <see langword="null"/>.</exception>
         public DatabaseUpdaterBuilder ConfigureLogging(Action<ILoggingBuilder> builder)
         {
+            ArgumentNullException.ThrowIfNull(builder);
+
             this.hostBuilder.ConfigureLogging(builder);
 
             return this;
@@ -130,8 +136,12 @@ namespace PosInformatique.Database.Updater
         /// </summary>
         /// <param name="assembly">Name of the assembly which contains the <see cref="Migration"/> to execute.</param>
         /// <returns>The current <see cref="DatabaseUpdaterBuilder"/> instance to continue the configuration.</returns>
+        /// <exception cref="ArgumentNullException">If the specified <paramref name="assembly"/> argument is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException">If the specified <paramref name="assembly"/> argument is empty or contains only white spaces.</exception>
         public DatabaseUpdaterBuilder UseMigrationsAssembly(string assembly)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(assembly);
+
             this.migrationsAssemblies.Add(assembly);
 
             return this;
@@ -142,8 +152,11 @@ namespace PosInformatique.Database.Updater
         /// </summary>
         /// <param name="assembly"><see cref="Assembly"/> which contains the <see cref="Migration"/> to execute.</param>
         /// <returns>The current <see cref="DatabaseUpdaterBuilder"/> instance to continue the configuration.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="assembly"/> is <see langword="null"/>.</exception>
         public DatabaseUpdaterBuilder UseMigrationsAssembly(Assembly assembly)
         {
+            ArgumentNullException.ThrowIfNull(assembly);
+
             return this.UseMigrationsAssembly(assembly.GetName().Name!);
         }
 
