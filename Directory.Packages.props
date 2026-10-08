@@ -1,18 +1,27 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- Versions of the packages -->
+    <DotNetVersion Condition="'$(TargetFramework)' == 'net8.0'">8.0.0</DotNetVersion>
+    <DotNetVersion Condition="'$(TargetFramework)' == 'net9.0'">9.0.0</DotNetVersion>
+    <DotNetVersion Condition="'$(TargetFramework)' == 'net10.0'">10.0.0</DotNetVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageVersion Include="Azure.Identity" Version="1.17.1" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(DotNetVersion)" Condition="'$(TargetFramework)' != 'net8.0'" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.25" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="$(DotNetVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="$(DotNetVersion)" />
     <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.12.0" />
     <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="2.5.1" />
     <PackageVersion Include="Moq" Version="4.21.0" />
     <PackageVersion Include="PosInformatique.Testing.Databases.SqlServer" Version="3.0.0" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.10" Condition="'$(TargetFramework)' == 'net10.0'" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="9.0.18" Condition="'$(TargetFramework)' == 'net9.0'" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="8.0.4" Condition="'$(TargetFramework)' == 'net8.0'" />
     <PackageVersion Include="xunit.v3.core.mtp-v2" Version="4.0.1" />
   </ItemGroup>
 </Project>

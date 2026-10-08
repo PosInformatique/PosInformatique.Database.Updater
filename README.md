@@ -3,7 +3,7 @@
 [![NuGet downloads](https://img.shields.io/nuget/dt/PosInformatique.Database.Updater)](https://www.nuget.org/packages/PosInformatique.Database.Updater/)
 [![License](https://img.shields.io/github/license/Nonanti/MathFlow?style=flat-square)](LICENSE)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/PosInformatique/PosInformatique.Database.Updater/github-actions-ci.yaml?style=flat-square)](https://github.com/PosInformatique/PosInformatique.Database.Updater/actions)
-[![.NET 8.0+](https://img.shields.io/badge/.NET-8.0%2B-512BD4?style=flat-square)](https://learn.microsoft.com/en-us/dotnet/standard/net-standard?tabs=net-standard-2-0)
+[![.NET 8.0+](https://img.shields.io/badge/.NET-8.0%2B-512BD4?style=flat-square)](https://learn.microsoft.com/fr-fr/dotnet/)
 
 A tiny console-oriented helper to run Entity Framework Core migrations in a predictable, CI/CD-friendly way.
 It parses a simple command line, executes pending migrations against your target database, and can optionally throw

@@ -31,7 +31,7 @@ jobs:
       - name: Build solution
         run: dotnet build PosInformatique.Database.Updater.slnx --configuration Release --no-restore
 
-      - name: Run tests
+      - name: Run tests (.NET 8.0)
         run: |
           dotnet test \
           --solution PosInformatique.Database.Updater.slnx \
@@ -41,7 +41,38 @@ jobs:
           --coverage-output-format cobertura \
           --coverage-settings CodeCoverage.runsettings \
           --report-trx \
-          --results-directory ./TestResults
+          --results-directory ./TestResults \
+          --framework net8.0
+        env:
+          DATABASE_UPDATER_UNIT_TESTS_CONNECTION_STRING: "Data Source=localhost,1433;Database=master;User Id=sa;Password=P@ssw0rd12345!;TrustServerCertificate=True;"
+
+      - name: Run tests (.NET 9.0)
+        run: |
+          dotnet test \
+          --solution PosInformatique.Database.Updater.slnx \
+          --configuration Release \
+          --no-build \
+          --coverage \
+          --coverage-output-format cobertura \
+          --coverage-settings CodeCoverage.runsettings \
+          --report-trx \
+          --results-directory ./TestResults \
+          --framework net9.0
+        env:
+          DATABASE_UPDATER_UNIT_TESTS_CONNECTION_STRING: "Data Source=localhost,1433;Database=master;User Id=sa;Password=P@ssw0rd12345!;TrustServerCertificate=True;"
+
+      - name: Run tests (.NET 10.0)
+        run: |
+          dotnet test \
+          --solution PosInformatique.Database.Updater.slnx \
+          --configuration Release \
+          --no-build \
+          --coverage \
+          --coverage-output-format cobertura \
+          --coverage-settings CodeCoverage.runsettings \
+          --report-trx \
+          --results-directory ./TestResults \
+          --framework net10.0
         env:
           DATABASE_UPDATER_UNIT_TESTS_CONNECTION_STRING: "Data Source=localhost,1433;Database=master;User Id=sa;Password=P@ssw0rd12345!;TrustServerCertificate=True;"
   

@@ -8,6 +8,9 @@
     <Copyright>Copyright (c) P.O.S Informatique. All rights reserved.</Copyright>
     <RepositoryUrl>https://github.com/PosInformatique/PosInformatique.Database.Updater</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    
+    <!-- .NET versions -->
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
 
     <!-- Enable the last version of C# -->
     <LangVersion>latest</LangVersion>

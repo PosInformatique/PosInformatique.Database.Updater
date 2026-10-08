@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
@@ -12,7 +11,9 @@
     <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" />
     <PackageReference Include="Moq" />
     <PackageReference Include="PosInformatique.Testing.Databases.SqlServer" />
-    <PackageReference Include="xunit.v3.core.mtp-v2" />  </ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.Xml" />
+    <PackageReference Include="xunit.v3.core.mtp-v2" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Database.Updater.Tests.MigrationsAssembly\Database.Updater.Tests.MigrationsAssembly.csproj" />
