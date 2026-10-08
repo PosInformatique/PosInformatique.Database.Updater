@@ -41,6 +41,17 @@ namespace PosInformatique.Database.Updater.Tests
         }
 
         [Fact]
+        public void ConfigureCommandLine_WithNullArgument()
+        {
+            var builder = new DatabaseUpdaterBuilder("MyApplication");
+
+            builder.Invoking(b => b.ConfigureCommandLine(null))
+                .Should().ThrowExactly<ArgumentNullException>()
+                .WithParameterName("commandLine")
+                .WithMessage("Value cannot be null. (Parameter 'commandLine')");
+        }
+
+        [Fact]
         public void ConfigureServices_WithNullArgument()
         {
             var builder = new DatabaseUpdaterBuilder("MyApplication");

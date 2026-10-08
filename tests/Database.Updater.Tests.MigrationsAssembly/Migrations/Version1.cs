@@ -15,10 +15,15 @@ namespace PosInformatique.Database.Updater.MigrationsAssembly
     [Migration("Version1")]
     public class Version1 : Migration
     {
-        public Version1(ISingletonService singletonService, ITransientService transientService)
+        public Version1(ISingletonService singletonService, ITransientService transientService, IDatabaseUpdaterCommandLine commandLine)
         {
             transientService.SingletonService.Should().BeSameAs(singletonService);
             transientService.InstanceCount.Should().Be(1);
+
+            commandLine.GetValue(UpdaterTestArguments.Argument1).Should().Be("Argument1Value");
+            commandLine.GetValue(UpdaterTestArguments.Options1).Should().Be("Option1Value");
+            commandLine.GetValue(UpdaterTestArguments.Options2).Should().Be(123);
+            commandLine.GetValue(UpdaterTestArguments.Options3).Should().Be(9999);
         }
 
         /// <inheritdoc />

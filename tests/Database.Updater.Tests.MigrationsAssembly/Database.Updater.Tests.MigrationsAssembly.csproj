@@ -13,4 +13,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Database.Updater\Database.Updater.csproj" />
+  </ItemGroup>
+
 </Project>

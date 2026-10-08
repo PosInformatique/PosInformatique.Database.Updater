@@ -15,7 +15,6 @@
     <PackageReference Include="xunit.v3.core.mtp-v2" />  </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Database.Updater\Database.Updater.csproj" />
     <ProjectReference Include="..\Database.Updater.Tests.MigrationsAssembly\Database.Updater.Tests.MigrationsAssembly.csproj" />
     <ProjectReference Include="..\Database.Updater.Tests.MigrationsErrorAssembly\Database.Updater.Tests.MigrationsErrorAssembly.csproj" />
   </ItemGroup>
