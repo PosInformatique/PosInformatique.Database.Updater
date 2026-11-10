@@ -16,7 +16,6 @@ namespace PosInformatique.Database.Updater
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
-    using PosInformatique.Database.Updater.SqlServer;
 
     /// <summary>
     /// Allows to setup builder which will create <see cref="IDatabaseUpdater"/> instance
@@ -39,6 +38,8 @@ namespace PosInformatique.Database.Updater
 
         private readonly Assembly callingAssembly;
 
+        private readonly List<Action<ICommandLineConfiguration>> commandLineConfigurations;
+
         private readonly List<string> migrationsAssemblies;
 
         private readonly IHostBuilder hostBuilder;
@@ -56,6 +57,7 @@ namespace PosInformatique.Database.Updater
             this.callingAssembly = Assembly.GetCallingAssembly();
 
             this.applicationName = applicationName;
+            this.commandLineConfigurations = new List<Action<ICommandLineConfiguration>>();
             this.migrationsAssemblies = new List<string>();
 
             this.hostBuilder = Host.CreateDefaultBuilder();
@@ -70,12 +72,30 @@ namespace PosInformatique.Database.Updater
         /// </summary>
         /// <param name="options">Callback which allows to configure the options of the database upgrade process.</param>
         /// <returns>The current <see cref="DatabaseUpdaterBuilder"/> instance to continue the configuration.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is <see langword="null"/>.</exception>
         public DatabaseUpdaterBuilder Configure(Action<DatabaseUpdaterOptions> options)
         {
+            ArgumentNullException.ThrowIfNull(options);
+
             this.hostBuilder.ConfigureServices(services =>
             {
                 services.Configure(options);
             });
+
+            return this;
+        }
+
+        /// <summary>
+        /// Configures the command line arguments and options for the upgrade database operation.
+        /// </summary>
+        /// <param name="commandLine">Callback which allows to configure the command line arguments and options.</param>
+        /// <returns>The current <see cref="DatabaseUpdaterBuilder"/> instance to continue the configuration.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="commandLine"/> is <see langword="null"/>.</exception>
+        public DatabaseUpdaterBuilder ConfigureCommandLine(Action<ICommandLineConfiguration> commandLine)
+        {
+            ArgumentNullException.ThrowIfNull(commandLine);
+
+            this.commandLineConfigurations.Add(commandLine);
 
             return this;
         }
@@ -86,9 +106,27 @@ namespace PosInformatique.Database.Updater
         /// </summary>
         /// <param name="builder"><see cref="ILoggingBuilder"/> which allows to configure the logging.</param>
         /// <returns>The current <see cref="DatabaseUpdaterBuilder"/> instance to continue the configuration.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is <see langword="null"/>.</exception>
         public DatabaseUpdaterBuilder ConfigureLogging(Action<ILoggingBuilder> builder)
         {
+            ArgumentNullException.ThrowIfNull(builder);
+
             this.hostBuilder.ConfigureLogging(builder);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a delegate for configuring additional services for the updater application.
+        /// </summary>
+        /// <param name="configureServices">A delegate for configuring the <see cref="IServiceCollection"/>.</param>
+        /// <returns>The current instance of <see cref="DatabaseUpdaterBuilder"/> to continue configuration.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureServices"/> is <see langword="null"/>.</exception>
+        public DatabaseUpdaterBuilder ConfigureServices(Action<IServiceCollection> configureServices)
+        {
+            ArgumentNullException.ThrowIfNull(configureServices);
+
+            this.hostBuilder.ConfigureServices(configureServices);
 
             return this;
         }
@@ -98,8 +136,12 @@ namespace PosInformatique.Database.Updater
         /// </summary>
         /// <param name="assembly">Name of the assembly which contains the <see cref="Migration"/> to execute.</param>
         /// <returns>The current <see cref="DatabaseUpdaterBuilder"/> instance to continue the configuration.</returns>
+        /// <exception cref="ArgumentNullException">If the specified <paramref name="assembly"/> argument is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException">If the specified <paramref name="assembly"/> argument is empty or contains only white spaces.</exception>
         public DatabaseUpdaterBuilder UseMigrationsAssembly(string assembly)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(assembly);
+
             this.migrationsAssemblies.Add(assembly);
 
             return this;
@@ -110,8 +152,11 @@ namespace PosInformatique.Database.Updater
         /// </summary>
         /// <param name="assembly"><see cref="Assembly"/> which contains the <see cref="Migration"/> to execute.</param>
         /// <returns>The current <see cref="DatabaseUpdaterBuilder"/> instance to continue the configuration.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="assembly"/> is <see langword="null"/>.</exception>
         public DatabaseUpdaterBuilder UseMigrationsAssembly(Assembly assembly)
         {
+            ArgumentNullException.ThrowIfNull(assembly);
+
             return this.UseMigrationsAssembly(assembly.GetName().Name!);
         }
 
@@ -148,11 +193,23 @@ namespace PosInformatique.Database.Updater
 
             private readonly Option<int> commandTimeoutOption;
 
+            private readonly DatabaseUpdaterCommandLineParseResult commandLineParseResult;
+
             private IHost? host;
 
             public CommandLineDatabaseUpdater(DatabaseUpdaterBuilder builder)
             {
                 this.builder = builder;
+
+                // Registers the IDatabaseUpdaterCommandLine service to allow the migration to access the command line arguments and options.
+                this.commandLineParseResult = new DatabaseUpdaterCommandLineParseResult();
+
+                this.builder.hostBuilder.ConfigureServices(services =>
+                {
+                    services.AddSingleton<IDatabaseUpdaterCommandLine>(this.commandLineParseResult);
+                });
+
+                // Build the host
                 this.host = builder.hostBuilder.Build();
 
                 var databaseProvider = this.host.Services.GetService<IDatabaseProvider>();
@@ -192,6 +249,14 @@ namespace PosInformatique.Database.Updater
                 this.commandLine.Options.Add(this.commandTimeoutOption);
 
                 this.commandLine.SetAction(this.ExecuteMigrationAsync);
+
+                // Add the configs set by the ConfigureCommandLine() method
+                var configurator = new CommandLineConfigurator(this.commandLine);
+
+                foreach (var config in this.builder.commandLineConfigurations)
+                {
+                    config(configurator);
+                }
             }
 
             public void Dispose()
@@ -205,11 +270,11 @@ namespace PosInformatique.Database.Updater
 
             public async Task<int> UpgradeAsync(IReadOnlyList<string> args, CancellationToken cancellationToken = default)
             {
-                var parseResult = this.commandLine.Parse(args);
+                this.commandLineParseResult.Result = this.commandLine.Parse(args);
 
                 var invocationConfiguration = new InvocationConfiguration() { EnableDefaultExceptionHandler = false };
 
-                return await parseResult.InvokeAsync(invocationConfiguration, cancellationToken: cancellationToken);
+                return await this.commandLineParseResult.Result.InvokeAsync(invocationConfiguration, cancellationToken: cancellationToken);
             }
 
             private async Task<int> ExecuteMigrationAsync(ParseResult parseResult, CancellationToken cancellationToken = default)

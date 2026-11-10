@@ -3,7 +3,7 @@
 [![NuGet downloads](https://img.shields.io/nuget/dt/PosInformatique.Database.Updater)](https://www.nuget.org/packages/PosInformatique.Database.Updater/)
 [![License](https://img.shields.io/github/license/Nonanti/MathFlow?style=flat-square)](LICENSE)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/PosInformatique/PosInformatique.Database.Updater/github-actions-ci.yaml?style=flat-square)](https://github.com/PosInformatique/PosInformatique.Database.Updater/actions)
-[![.NET 8.0+](https://img.shields.io/badge/.NET-8.0%2B-512BD4?style=flat-square)](https://learn.microsoft.com/en-us/dotnet/standard/net-standard?tabs=net-standard-2-0)
+[![.NET 8.0+](https://img.shields.io/badge/.NET-8.0%2B-512BD4?style=flat-square)](https://learn.microsoft.com/fr-fr/dotnet/)
 
 A tiny console-oriented helper to run Entity Framework Core migrations in a predictable, CI/CD-friendly way.
 It parses a simple command line, executes pending migrations against your target database, and can optionally throw
@@ -185,6 +185,102 @@ var updater = new DatabaseUpdaterBuilder("MyApplication")
     })
     // ...
     .Build();
+```
+
+### Inject services into your migration classes
+
+The migrations are resolved through dependency injection, so you can inject any service registered in the
+underlying `IServiceCollection` directly into your `Migration` class constructor (singleton, scoped, or transient services).
+
+To register additional services, call `ConfigureServices()` during builder setup.
+
+For example:
+```csharp
+var updater = new DatabaseUpdaterBuilder("MyApplication")
+    .UseSqlServer()
+    .UseMigrationsAssembly(typeof(Program).Assembly)
+    .ConfigureServices(services =>
+    {
+        services.AddSingleton<IMyService, MyService>();
+    })
+    // ...
+    .Build();
+```
+
+The registered service can then be injected into the migration constructor:
+
+```csharp
+public class Version1 : Migration
+{
+    public Version1(IMyService myService)
+    {
+        // Use myService here.
+    }
+
+    protected override void Up(MigrationBuilder migrationBuilder)
+    {
+        // ...
+    }
+}
+```
+
+### Add custom command line arguments and options
+
+You can extend the command line parsed by `IDatabaseUpdater.UpgradeAsync()` with your own typed arguments and
+options by calling `ConfigureCommandLine()` during builder setup. This provides an `ICommandLineConfiguration`
+instance to register additional `Argument<T>` and `Option<T>` (from the `System.CommandLine` library).
+
+For example:
+```csharp
+var updater = new DatabaseUpdaterBuilder("MyApplication")
+    .UseSqlServer()
+    .UseMigrationsAssembly(typeof(Program).Assembly)
+    .ConfigureCommandLine(commandLine =>
+    {
+        commandLine.AddArgument(MyArguments.Environment);
+        commandLine.AddOption(MyArguments.Verbose);
+    })
+    // ...
+    .Build();
+```
+
+With the following custom arguments/options defined:
+
+```csharp
+public static class MyArguments
+{
+    public static Argument<string> Environment { get; } = new Argument<string>("environment")
+    {
+        Description = "The target environment",
+    };
+
+    public static Option<bool> Verbose { get; } = new Option<bool>("--verbose")
+    {
+        Description = "Enable verbose output",
+        Required = false,
+    };
+}
+```
+
+The values of these custom arguments and options can then be retrieved in your migration classes by injecting
+the `IDatabaseUpdaterCommandLine` service and calling `GetValue<T>()`:
+
+```csharp
+public class Version1 : Migration
+{
+    public Version1(IDatabaseUpdaterCommandLine commandLine)
+    {
+        var environment = commandLine.GetValue(MyArguments.Environment);
+        var verbose = commandLine.GetValue(MyArguments.Verbose);
+
+        // Use environment and verbose here.
+    }
+
+    protected override void Up(MigrationBuilder migrationBuilder)
+    {
+        // ...
+    }
+}
 ```
 
 ### Increase the timeout for SQL command execution

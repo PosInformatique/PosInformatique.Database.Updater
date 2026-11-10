@@ -6,6 +6,8 @@
 
 namespace PosInformatique.Database.Updater.Tests
 {
+    using System.CommandLine;
+    using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using PosInformatique.Testing.Databases.SqlServer;
 
@@ -20,13 +22,43 @@ namespace PosInformatique.Database.Updater.Tests
             var database = await server.CreateEmptyDatabaseAsync("DatabaseUpdaterTest_UpgradeAsync_WithExplicitMigrationsAssembly", cancellationToken: TestContext.Current.CancellationToken);
 
             var databaseUpdaterBuilder = new DatabaseUpdaterBuilder("MyApplication")
+                .Configure(c =>
+                {
+                    c.ThrowExceptionOnError = true;
+                })
+                .ConfigureCommandLine(commandLine =>
+                {
+                    commandLine.AddArgument(UpdaterTestArguments.Argument1);
+                    commandLine.AddOption(UpdaterTestArguments.Options1);
+                })
+                .ConfigureCommandLine(commandLine =>
+                {
+                    commandLine.AddOption(UpdaterTestArguments.Options2);
+                    commandLine.AddOption(UpdaterTestArguments.Options3);
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddSingleton<ISingletonService, SingletonService>();
+                })
+                .ConfigureServices(s =>
+                {
+                    s.AddTransient<ITransientService, TransientService>();
+                })
                 .UseSqlServer()
                 .UseMigrationsAssembly(typeof(MigrationsAssembly.Version1).Assembly);
 
             using var databaseUpdater = databaseUpdaterBuilder
                 .Build();
 
-            var result = await databaseUpdater.UpgradeAsync([database.ConnectionString], TestContext.Current.CancellationToken);
+            var args = new[]
+            {
+                database.ConnectionString,
+                "Argument1Value",
+                "--option1=Option1Value",
+                "--option2=123",
+            };
+
+            var result = await databaseUpdater.UpgradeAsync(args, TestContext.Current.CancellationToken);
 
             result.Should().Be(0);
 
@@ -126,6 +158,21 @@ namespace PosInformatique.Database.Updater.Tests
             var databaseUpdaterBuilder = new DatabaseUpdaterBuilder("MyApplication");
 
             using var databaseUpdater = databaseUpdaterBuilder
+                .ConfigureCommandLine(commandLine =>
+                {
+                    commandLine.AddOption(new Option<string>("option1")
+                    {
+                        Description = "The option 1",
+                        Required = false,
+                    });
+                })
+                .ConfigureCommandLine(commandLine =>
+                {
+                    commandLine.AddOption(new Option<string>("option2")
+                    {
+                        Description = "The option 2",
+                    });
+                })
                 .UseSqlServer()
                 .Build();
 
@@ -147,6 +194,8 @@ namespace PosInformatique.Database.Updater.Tests
                 Options:
                   --access-token <access-token>        Access token to connect to the SQL database.
                   --command-timeout <command-timeout>  Maximum time in seconds to execute each SQL statements. [default: 30]
+                  option1 <option1>                    The option 1
+                  option2 <option2>                    The option 2
                   -?, -h, --help                       Show help and usage information
                   --version                            Show version information
 

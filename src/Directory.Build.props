@@ -11,13 +11,12 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReleaseNotes>
-      1.0.0
-      - Initial version
+      $([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/CHANGELOG.md"))
     </PackageReleaseNotes>
   </PropertyGroup>
   
   <!-- Add the InternalsVisibleToAttribute for the tests -->
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+  <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
 	    <_Parameter1>$(AssemblyName).Tests</_Parameter1>
     </AssemblyAttribute>
